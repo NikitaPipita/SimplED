@@ -21,6 +21,8 @@ environment:
   sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
+  hexcolor: ^1.0.6
+  image_picker: ^0.6.7+12
   flutter:
     sdk: flutter
 
