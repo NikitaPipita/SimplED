@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'course_creation_page.dart';
 import '../course_view/course_card.dart';
 
 class UserCoursesPage extends StatefulWidget {
@@ -65,8 +66,12 @@ class _UserCoursesPageState extends State<UserCoursesPage> with SingleTickerProv
                 sliver: SliverToBoxAdapter(
                   child: RaisedButton(
                     child: Text('+ Create Course'),
-                    //TODO: make navigation to the creation course page
-                    onPressed: () {/* ... */},
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => CourseCreationPage())
+                      );
+                    },
                   ),
                 ),
               ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'course_page.dart';
+
 class CourseCard extends StatelessWidget {
   final courseCardShape = RoundedRectangleBorder
     (borderRadius: BorderRadius.circular(10.0));
@@ -15,7 +17,10 @@ class CourseCard extends StatelessWidget {
         child: FlatButton(
           shape: courseCardShape,
           onPressed: () {
-
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CoursePage())
+            );
           },
           child: Padding(
             padding: EdgeInsets.all(10.0),
@@ -51,7 +56,7 @@ class CourseCard extends StatelessWidget {
                   children: [
                     Text('Date'),
                     Flexible(child: Container()),
-                    Text('Price'),
+                    Text('Language'),
                   ],
                 ),
               ],

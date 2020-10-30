@@ -23,6 +23,7 @@ environment:
 dependencies:
   hexcolor: ^1.0.6
   image_picker: ^0.6.7+12
+  flutter_svg: ^0.19.0
   flutter:
     sdk: flutter
 
@@ -40,6 +41,8 @@ dev_dependencies:
 
 # The following section is specific to Flutter.
 flutter:
+  assets:
+    - assets/course_default_picture.svg
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

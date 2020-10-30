@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
         primaryColorLight: HexColor('#64d8cb'),
         primaryColorDark: HexColor('#00766c'),
         accentColor: HexColor('#a5d6a7'),
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.teal,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: BottomNavigation(),
