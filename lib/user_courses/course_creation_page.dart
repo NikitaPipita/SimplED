@@ -4,10 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../api_interection/data_models.dart';
+import '../api_interection/preload_info.dart';
+
 class CourseCreationPage extends StatefulWidget {
-  final _courseFormKey = GlobalKey<FormState>();
-  final _courseTitleController = TextEditingController();
-  final _courseDescriptionController = TextEditingController();
+  final Function userCoursesPageUpdate;
+  final Course courseInfo;
+
+  CourseCreationPage(
+      this.userCoursesPageUpdate,
+      {Key key, this.courseInfo}
+      ) : super(key: key);
 
   @override
   _CourseCreationPageState createState() => _CourseCreationPageState();
@@ -15,10 +22,42 @@ class CourseCreationPage extends StatefulWidget {
 
 class _CourseCreationPageState extends State<CourseCreationPage> {
 
+  File _image;
+  getPhotoFileFromTheChild(File value) => _image = value;
+
+  GlobalKey<FormState> _courseFormKey;
+  TextEditingController _courseTitleController;
+  TextEditingController _courseDescriptionController;
+  TextEditingController _courseCategoryController;
+  TextEditingController _courseLanguageController;
+  TextEditingController _courseDateController;
+
+  @override
+  void initState() {
+    super.initState();
+    _courseFormKey = GlobalKey<FormState>();
+    _courseTitleController = TextEditingController();
+    _courseDescriptionController = TextEditingController();
+    _courseCategoryController = TextEditingController();
+    _courseLanguageController = TextEditingController();
+    _courseDateController = TextEditingController();
+
+    if (widget.courseInfo != null) {
+      _courseTitleController.text = widget.courseInfo.title;
+      _courseDescriptionController.text = widget.courseInfo.description;
+      _courseCategoryController.text = PreloadInfo.coursesCategories[widget.courseInfo.category];
+      _courseLanguageController.text = PreloadInfo.coursesLanguages[widget.courseInfo.language];
+      _courseDateController.text = widget.courseInfo.startDate;
+    }
+  }
+
   @override
   void dispose() {
-    widget._courseTitleController.dispose();
-    widget._courseDescriptionController.dispose();
+    _courseTitleController.dispose();
+    _courseDescriptionController.dispose();
+    _courseCategoryController.dispose();
+    _courseLanguageController.dispose();
+    _courseDateController.dispose();
     super.dispose();
   }
 
@@ -27,30 +66,43 @@ class _CourseCreationPageState extends State<CourseCreationPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Create new course'),
+        actions: widget.courseInfo != null
+            ? [
+              IconButton(
+                icon: Icon(Icons.delete_outline),
+                //TODO: Implement delete of course.
+                onPressed: () {
+                  Course course = Course(id: widget.courseInfo.id);
+                  widget.userCoursesPageUpdate(course, 'delete');
+                  Navigator.pop(context);
+                },
+              ),]
+            : [],
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(16.0),
           child: Column(
-            //mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              //TODO: Get photo from the CoursePhoto class.
-              CoursePhoto(),
+              //TODO: Implement course photo view.
+              CoursePhoto(getPhotoFileFromTheChild),
               SizedBox(
                 height: 15.0,
               ),
               CourseInfoTextForm(
-                widget._courseFormKey,
-                widget._courseTitleController,
-                widget._courseDescriptionController,
+                _courseFormKey,
+                _courseTitleController,
+                _courseDescriptionController,
               ),
               SizedBox(
                 height: 15.0,
               ),
-              //TODO: Get selected category from the CourseCategoryDropdownMenu class.
               Align(
                 alignment: Alignment.centerLeft,
-                child: CourseCategoryDropdownMenu(),
+                child: CourseDropdownMenu(
+                    PreloadInfo.coursesCategories.values.toList(),
+                    _courseCategoryController,
+                ),
               ),
               SizedBox(
                 height: 15.0,
@@ -58,10 +110,11 @@ class _CourseCreationPageState extends State<CourseCreationPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  //TODO: Get selected language
-                  CourseLanguageDropdownMenu(),
-                  //TODO: Get selected date.
-                  PickDateButton(),
+                  CourseDropdownMenu(
+                      PreloadInfo.coursesLanguages.values.toList(),
+                      _courseLanguageController
+                  ),
+                  PickDateButton(_courseDateController),
                 ],
               ),
               SizedBox(
@@ -77,15 +130,60 @@ class _CourseCreationPageState extends State<CourseCreationPage> {
 
   Widget createCourseButton() {
     return RaisedButton(
-      child: Text('PUBLISH'),
-      //TODO: Replace with API update and create.
-      onPressed: () {/* ... */},
+      child: widget.courseInfo == null ? Text('PUBLISH') : Text('UPDATE'),
+      onPressed: () {
+        if (_courseFormKey.currentState.validate()) {
+
+          String category;
+          for (String key in PreloadInfo.coursesCategories.keys) {
+            if (_courseCategoryController.text == PreloadInfo.coursesCategories[key]) {
+              category = key;
+              break;
+            }
+          }
+
+          String language;
+          for (String key in PreloadInfo.coursesLanguages.keys) {
+            if (_courseLanguageController.text == PreloadInfo.coursesLanguages[key]) {
+              language = key;
+              break;
+            }
+          }
+
+          if (widget.courseInfo == null) {
+            Course course = Course(
+              title: _courseTitleController.text,
+              description: _courseDescriptionController.text,
+              category: category,
+              language: language,
+              startDate: _courseDateController.text,
+            );
+            widget.userCoursesPageUpdate(course, 'create');
+          } else {
+            Course course = Course(
+              id: widget.courseInfo.id,
+              title: _courseTitleController.text,
+              description: _courseDescriptionController.text,
+              category: category,
+              language: language,
+              startDate: _courseDateController.text,
+            );
+            widget.userCoursesPageUpdate(course, 'update');
+          }
+
+          Navigator.pop(context);
+        }
+      },
     );
   }
 }
 
 
 class CoursePhoto extends StatefulWidget {
+  final Function sendPhotoFileToTheParent;
+
+  CoursePhoto(this.sendPhotoFileToTheParent);
+
   @override
   _CoursePhotoState createState() => _CoursePhotoState();
 }
@@ -99,6 +197,7 @@ class _CoursePhotoState extends State<CoursePhoto> {
 
     setState(() {
       if (pickedFile != null) {
+        widget.sendPhotoFileToTheParent(_image);
         _image = File(pickedFile.path);
       } else {
         print('No image selected.');
@@ -161,6 +260,7 @@ class _CourseInfoTextFormState extends State<CourseInfoTextForm> {
         children: [
           TextFormField(
             controller: widget._courseTitleController,
+            maxLength: 100,
             decoration: InputDecoration(
               labelText: 'Course Title',
               hintText: 'Type course title',
@@ -168,7 +268,7 @@ class _CourseInfoTextFormState extends State<CourseInfoTextForm> {
             ),
             validator: (value) {
               if (value.isEmpty) {
-                return "Exeption";
+                return "This field must not be empty";
               }
               return null;
             },
@@ -182,12 +282,6 @@ class _CourseInfoTextFormState extends State<CourseInfoTextForm> {
               hintText: 'Write a course description',
               prefixIcon: Icon(Icons.description),
             ),
-            validator: (value) {
-              if (value.isEmpty) {
-                return "Exeption";
-              }
-              return null;
-            },
           ),
         ],
       ),
@@ -196,40 +290,33 @@ class _CourseInfoTextFormState extends State<CourseInfoTextForm> {
 }
 
 
-class CourseCategoryDropdownMenu extends StatefulWidget {
+class CourseDropdownMenu extends StatefulWidget {
+  final List<String> _dropdownMenuItems;
+  final _dropdownMenuValueController;
+
+  CourseDropdownMenu(
+      this._dropdownMenuItems,
+      this._dropdownMenuValueController);
+
   @override
-  _CourseCategoryDropdownMenuState createState() => _CourseCategoryDropdownMenuState();
+  _CourseDropdownMenuState createState() => _CourseDropdownMenuState();
 }
 
-class _CourseCategoryDropdownMenuState extends State<CourseCategoryDropdownMenu> {
-
-  //TODO: Replace with API value
-  final categories = <String>[
-    'Music',
-    'Photography',
-    'Design',
-    'Arts',
-    'Business',
-    'Language learning',
-    'Programming',
-    'Health',
-    'Social science',
-    'Engineering',
-    'Math',
-  ];
-
-  String _selectedCategory;
+class _CourseDropdownMenuState extends State<CourseDropdownMenu> {
 
   @override
   void initState() {
     super.initState();
-    _selectedCategory = categories[0];
+    if (widget._dropdownMenuValueController.text == null
+        || widget._dropdownMenuValueController.text == '') {
+      widget._dropdownMenuValueController.text = widget._dropdownMenuItems[0];
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return DropdownButton<String>(
-      value: _selectedCategory,
+      value: widget._dropdownMenuValueController.text,
       icon: Icon(Icons.arrow_downward),
       iconSize: 24,
       elevation: 16,
@@ -239,10 +326,10 @@ class _CourseCategoryDropdownMenuState extends State<CourseCategoryDropdownMenu>
       ),
       onChanged: (String newValue) {
         setState(() {
-          _selectedCategory = newValue;
+          widget._dropdownMenuValueController.text = newValue;
         });
       },
-      items: categories.map<DropdownMenuItem<String>>((String value) {
+      items: widget._dropdownMenuItems.map<DropdownMenuItem<String>>((String value) {
         return DropdownMenuItem<String>(
           value: value,
           child: Text(value),
@@ -254,16 +341,48 @@ class _CourseCategoryDropdownMenuState extends State<CourseCategoryDropdownMenu>
 
 
 class PickDateButton extends StatefulWidget {
+  final _selectedDateController;
+
+  PickDateButton(this._selectedDateController);
+
   @override
   _PickDateButtonState createState() => _PickDateButtonState();
 }
 
 class _PickDateButtonState extends State<PickDateButton> {
 
-  DateTime _selectedDate = DateTime.now();
+  DateTime _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget._selectedDateController.text == null
+        || widget._selectedDateController.text == '') {
+      widget._selectedDateController.text = convertDateToString(DateTime.now());
+      _selectedDate = DateTime.now();
+    } else {
+      List<String> yearMonthDay = widget._selectedDateController.text.split('-');
+      _selectedDate = DateTime(
+          int.parse(yearMonthDay[0]),
+          int.parse(yearMonthDay[1]),
+          int.parse(yearMonthDay[2]));
+    }
+  }
+
+  String convertDateToString(DateTime date) {
+    String year = date.year.toString();
+    String month = date.month.toString().length < 2
+        ? '0' + date.month.toString()
+        : date.month.toString();
+    String day = date.day.toString().length < 2
+        ? '0' + date.day.toString()
+        : date.day.toString();
+    return year + '-' + month + '-' + day;
+  }
 
   void changeSelectedDate(DateTime date) {
     setState(() {
+      widget._selectedDateController.text = convertDateToString(date);
       _selectedDate = date;
     });
   }
@@ -271,9 +390,7 @@ class _PickDateButtonState extends State<PickDateButton> {
   @override
   Widget build(BuildContext context) {
     return RaisedButton(
-      child: Text(_selectedDate.year.toString() + '-'
-          + _selectedDate.month.toString() + '-'
-          + _selectedDate.day.toString()),
+      child: Text(convertDateToString(_selectedDate)),
       onPressed: () {
         showDatePicker(
           context: context,
@@ -282,57 +399,6 @@ class _PickDateButtonState extends State<PickDateButton> {
           lastDate: DateTime.now().add(Duration(days: 365)),
         ).then((date) => changeSelectedDate(date));
       },
-    );
-  }
-}
-
-
-class CourseLanguageDropdownMenu extends StatefulWidget {
-  @override
-  _CourseLanguageDropdownMenuState createState() => _CourseLanguageDropdownMenuState();
-}
-
-class _CourseLanguageDropdownMenuState extends State<CourseLanguageDropdownMenu> {
-
-  //TODO: Replace with API value
-  final categories = <String>[
-    'English',
-    'Chinese',
-    'Spanish',
-    'French',
-    'Russian',
-  ];
-
-  String _selectedCategory;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedCategory = categories[0];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return DropdownButton<String>(
-      value: _selectedCategory,
-      icon: Icon(Icons.arrow_downward),
-      iconSize: 24,
-      elevation: 16,
-      underline: Container(
-        height: 2,
-        color: Colors.blueGrey,
-      ),
-      onChanged: (String newValue) {
-        setState(() {
-          _selectedCategory = newValue;
-        });
-      },
-      items: categories.map<DropdownMenuItem<String>>((String value) {
-        return DropdownMenuItem<String>(
-          value: value,
-          child: Text(value),
-        );
-      }).toList(),
     );
   }
 }

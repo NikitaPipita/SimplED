@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
+import 'package:simpleed/api_interection/data_models.dart';
+import 'package:simpleed/course_view/course_list_page.dart';
 
+import 'api_interection/authorized_user_info.dart';
+import 'api_interection/preload_info.dart';
+import 'api_interection/requests.dart';
 import 'course_view/categories_page.dart';
 import 'user_courses/user_courses_page.dart';
 import 'user_profile/user_profile_page.dart';
@@ -34,26 +39,105 @@ class BottomNavigation extends StatefulWidget {
 
 class _BottomNavigationState extends State<BottomNavigation> {
 
+  bool _isInfoPreloaded;
+
   final bottomNavBarPages = [
-    CategoriesPage(),
+    CourseList(),
     UserCoursesPage(),
     ProfilePage(),
   ];
 
-  int _selectedPage = 0;
+  Widget _selectedPageWidget = CategoriesPage();
+
+  int _selectedPageIndex;
 
   void _changePage(int index) {
-    if (index == _selectedPage) return;
+    if (index == _selectedPageIndex) return;
     setState(() {
-      _selectedPage = index;
+      _selectedPageIndex = index;
+      switch (_selectedPageIndex){
+        case 0:
+//          bottomNavBarPages[0] = CategoriesPage();
+          return;
+        case 1:
+//          bottomNavBarPages[1] = UserCoursesPage();
+          return;
+        case 2:
+          bottomNavBarPages[2] = ProfilePage();
+          return;
+      }
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _isInfoPreloaded = false;
+    _selectedPageIndex = 0;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: bottomNavBarPages[_selectedPage],
+      body: _isInfoPreloaded == false
+          ? preloadInfoFutureBuilder()
+          : bottomNavBarPages[_selectedPageIndex],
       bottomNavigationBar: bottomNavBar(),
+    );
+  }
+
+  Widget preloadInfoFutureBuilder() {
+    return FutureBuilder(
+      future: getCoursesCategories(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          for (CourseCategory category in snapshot.data) {
+            PreloadInfo.coursesCategories[category.dbValue] = category.title;
+          }
+          return FutureBuilder(
+            future: getCoursesLanguages(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                for (CourseLanguage language in snapshot.data) {
+                  PreloadInfo.coursesLanguages[language.dbValue] = language.title;
+                }
+                //TODO: Replace with authorization/registration.
+                return FutureBuilder(
+                  future: getUserInfo(6),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      AuthorizedUserInfo.needToUpdateInformation = false;
+                      AuthorizedUserInfo.userInfo = snapshot.data;
+                      return bottomNavBarPages[_selectedPageIndex];
+                    } else if (snapshot.hasError) {
+                      return Center(
+                          child: Text("${snapshot.error}")
+                      );
+                    }
+                    return Center(
+                        child: CircularProgressIndicator()
+                    );
+                  },
+                );
+              } else if (snapshot.hasError) {
+                return Center(
+                    child: Text("${snapshot.error}")
+                );
+              }
+              return Center(
+                  child: CircularProgressIndicator()
+              );
+            },
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+              child: Text("${snapshot.error}")
+          );
+        }
+        return Center(
+            child: CircularProgressIndicator()
+        );
+      },
     );
   }
 
@@ -73,7 +157,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
           label: "Profile",
         ),
       ],
-      currentIndex: _selectedPage,
+      currentIndex: _selectedPageIndex,
       selectedItemColor: HexColor('#00766c'),
       onTap: _changePage,
     );
