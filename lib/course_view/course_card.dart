@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
 
+import '../api_interection/data_models.dart';
+import '../api_interection/preload_info.dart';
+import '../user_courses/course_creation_page.dart';
 import 'course_page.dart';
 
 class CourseCard extends StatelessWidget {
+  final Course courseInfo;
+  final String status;
+  final Function userCoursesPageUpdate;
+
   final courseCardShape = RoundedRectangleBorder
     (borderRadius: BorderRadius.circular(10.0));
+
+  CourseCard(this.courseInfo, this.status, {this.userCoursesPageUpdate});
 
   @override
   Widget build(BuildContext context) {
@@ -17,10 +26,22 @@ class CourseCard extends StatelessWidget {
         child: FlatButton(
           shape: courseCardShape,
           onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => CoursePage())
-            );
+            if (status == 'view' || status == 'added') {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CoursePage())
+              );
+            } else if (status == 'created') {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) =>
+                      CourseCreationPage(
+                        userCoursesPageUpdate,
+                        courseInfo: courseInfo,
+                      )
+                  )
+              );
+            }
           },
           child: Padding(
             padding: EdgeInsets.all(10.0),
@@ -28,7 +49,7 @@ class CourseCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Course Title',
+                  courseInfo.title,
                   maxLines: 2,
                   style: TextStyle(
                     fontSize: 20.0,
@@ -39,13 +60,13 @@ class CourseCard extends StatelessWidget {
                   height: 5.0,
                 ),
                 Text(
-                  'Category',
+                  PreloadInfo.coursesCategories[courseInfo.category],
                 ),
                 SizedBox(
                   height: 5.0,
                 ),
                 Text(
-                  'Course Description',
+                  courseInfo.description,
                   maxLines: 4,
                 ),
                 Flexible(child: Container()),
@@ -54,9 +75,9 @@ class CourseCard extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    Text('Date'),
+                    Text(courseInfo.startDate),
                     Flexible(child: Container()),
-                    Text('Language'),
+                    Text(PreloadInfo.coursesLanguages[courseInfo.language]),
                   ],
                 ),
               ],

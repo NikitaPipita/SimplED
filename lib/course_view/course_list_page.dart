@@ -1,53 +1,85 @@
 import 'package:flutter/material.dart';
 
+import '../api_interection/data_models.dart';
+import '../api_interection/requests.dart';
 import 'course_card.dart';
 
-class CourseList extends StatelessWidget {
+class CourseList extends StatefulWidget {
+  @override
+  _CourseListState createState() => _CourseListState();
+}
 
-  final courseList = <Widget>[
-    CourseCard(),
-    CourseCard(),
-    CourseCard(),
-    CourseCard(),
-    CourseCard(),
-    CourseCard(),
-  ];
+class _CourseListState extends State<CourseList> {
+
+  Future<List<Course>> _futureCourses;
+  bool _isFutureLoaded = false;
+  final courses = <Widget>[];
+
+  @override
+  void initState() {
+    super.initState();
+    _futureCourses = getCourses();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 200.0,
-            floating: true,
-            automaticallyImplyLeading: false,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Padding(
-                padding: EdgeInsets.fromLTRB(25.0, 50.0, 25.0, 10.0),
-                child: Column(
-                  children: [
-                    SearchTextField(),
-                    SizedBox(
-                      height: 15.0,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        PickDateButton(),
-                      ],
-                    )
-                  ],
-                ),
+      body: FutureBuilder(
+        future: _futureCourses,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            if (!_isFutureLoaded) {
+              _isFutureLoaded = true;
+              for (Course course in snapshot.data) {
+                courses.add(CourseCard(course, 'view'));
+              }
+            }
+            return courseListCustomScrollView();
+          } else if (snapshot.hasError) {
+            return Center(
+                child: Text("${snapshot.error}")
+            );
+          }
+          return Center(
+              child: CircularProgressIndicator()
+          );
+        },
+      ),
+    );
+  }
+
+  Widget courseListCustomScrollView() {
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar(
+          expandedHeight: 200.0,
+          floating: true,
+          automaticallyImplyLeading: false,
+          flexibleSpace: FlexibleSpaceBar(
+            background: Padding(
+              padding: EdgeInsets.fromLTRB(25.0, 50.0, 25.0, 10.0),
+              child: Column(
+                children: [
+                  SearchTextField(),
+                  SizedBox(
+                    height: 15.0,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      PickDateButton(),
+                    ],
+                  )
+                ],
               ),
             ),
           ),
-          //TODO: Replace with API request.
-          SliverList(
-            delegate: SliverChildListDelegate(courseList),
-          ),
-        ],
-      ),
+        ),
+        //TODO: Replace with API request.
+        SliverList(
+          delegate: SliverChildListDelegate(courses),
+        ),
+      ],
     );
   }
 }

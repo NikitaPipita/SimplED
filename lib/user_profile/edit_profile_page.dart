@@ -4,9 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class EditProfilePage extends StatefulWidget {
-  final _userProfileFormKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
-  final _userDescriptionController = TextEditingController();
+  final _userFirstNameController;
+  final _userLastNameController;
+  final _userDescriptionController;
+
+  EditProfilePage(
+      this._userFirstNameController,
+      this._userLastNameController,
+      this._userDescriptionController);
 
   @override
   _EditProfilePageState createState() => _EditProfilePageState();
@@ -14,10 +19,19 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
 
+  File _image;
+  getPhotoFileFromTheChild(File value) => _image = value;
+
+  GlobalKey<FormState> _userProfileFormKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _userProfileFormKey = GlobalKey<FormState>();
+  }
+
   @override
   void dispose() {
-    widget._usernameController.dispose();
-    widget._userDescriptionController.dispose();
     super.dispose();
   }
 
@@ -26,22 +40,29 @@ class _EditProfilePageState extends State<EditProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit Profile'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.delete_outline),
+            onPressed: () {
+              //TODO: Implement profile delete and alert dialog.
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(8.0),
-          //TODO: Replace with user profile info
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              //TODO: Get photo from ProfilePhoto class
-              ProfilePhoto(),
+              ProfilePhoto(getPhotoFileFromTheChild),
               SizedBox(
                 height: 15.0,
               ),
               ProfileInfoTextForm(
-                widget._userProfileFormKey,
-                widget._usernameController,
+                _userProfileFormKey,
+                widget._userFirstNameController,
+                widget._userLastNameController,
                 widget._userDescriptionController,
               ),
               SizedBox(
@@ -58,14 +79,24 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Widget profileEditButton() {
     return RaisedButton(
       child: Text('EDIT'),
-      //TODO: Send new values to the server
-      onPressed: () {/* ... */},
+      onPressed: () {
+        if(_userProfileFormKey.currentState.validate()) {
+          Navigator.pop(
+            context,
+            'update',
+          );
+        }
+      },
     );
   }
 }
 
 
 class ProfilePhoto extends StatefulWidget {
+  final Function sendPhotoFileToTheParent;
+
+  ProfilePhoto(this.sendPhotoFileToTheParent);
+
   @override
   _ProfilePhotoState createState() => _ProfilePhotoState();
 }
@@ -79,6 +110,7 @@ class _ProfilePhotoState extends State<ProfilePhoto> {
 
     setState(() {
       if (pickedFile != null) {
+        widget.sendPhotoFileToTheParent(_image);
         _image = File(pickedFile.path);
       } else {
         print('No image selected.');
@@ -108,12 +140,14 @@ class _ProfilePhotoState extends State<ProfilePhoto> {
 
 class ProfileInfoTextForm extends StatefulWidget {
   final _userProfileFormKey;
-  final _usernameController;
+  final _userFirstNameController;
+  final _userLastNameController;
   final _userDescriptionController;
 
   ProfileInfoTextForm(
       this._userProfileFormKey,
-      this._usernameController,
+      this._userFirstNameController,
+      this._userLastNameController,
       this._userDescriptionController);
 
   @override
@@ -128,15 +162,29 @@ class _ProfileInfoTextFormState extends State<ProfileInfoTextForm> {
       child: Column(
         children: [
           TextFormField(
-            controller: widget._usernameController,
+            controller: widget._userFirstNameController,
             decoration: InputDecoration(
-              labelText: 'Username',
-              hintText: 'Enter your new username',
+              labelText: 'Name',
+              hintText: 'Enter your new name',
               prefixIcon: Icon(Icons.person_outline),
             ),
             validator: (value) {
               if (value.isEmpty) {
-                return "Exeption";
+                return "This field must not be empty";
+              }
+              return null;
+            },
+          ),
+          TextFormField(
+            controller: widget._userLastNameController,
+            decoration: InputDecoration(
+              labelText: 'Surname',
+              hintText: 'Enter your new surname',
+              prefixIcon: Icon(Icons.person_outline),
+            ),
+            validator: (value) {
+              if (value.isEmpty) {
+                return "This field must not be empty";
               }
               return null;
             },
