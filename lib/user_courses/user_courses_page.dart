@@ -107,7 +107,6 @@ class _UserCoursesPageState extends State<UserCoursesPage> with SingleTickerProv
             ),
           ],
         ),
-        //TODO: Replace with API requests
         CustomScrollView(
           slivers: [
             SliverPadding(

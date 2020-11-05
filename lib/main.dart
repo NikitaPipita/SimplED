@@ -6,7 +6,6 @@ import 'package:simpleed/course_view/course_list_page.dart';
 import 'api_interection/authorized_user_info.dart';
 import 'api_interection/preload_info.dart';
 import 'api_interection/requests.dart';
-import 'course_view/categories_page.dart';
 import 'user_courses/user_courses_page.dart';
 import 'user_profile/user_profile_page.dart';
 
@@ -47,25 +46,12 @@ class _BottomNavigationState extends State<BottomNavigation> {
     ProfilePage(),
   ];
 
-  Widget _selectedPageWidget = CategoriesPage();
-
   int _selectedPageIndex;
 
   void _changePage(int index) {
     if (index == _selectedPageIndex) return;
     setState(() {
       _selectedPageIndex = index;
-      switch (_selectedPageIndex){
-        case 0:
-//          bottomNavBarPages[0] = CategoriesPage();
-          return;
-        case 1:
-//          bottomNavBarPages[1] = UserCoursesPage();
-          return;
-        case 2:
-          bottomNavBarPages[2] = ProfilePage();
-          return;
-      }
     });
   }
 

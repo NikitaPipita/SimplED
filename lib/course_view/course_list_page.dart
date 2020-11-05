@@ -58,24 +58,10 @@ class _CourseListState extends State<CourseList> {
           flexibleSpace: FlexibleSpaceBar(
             background: Padding(
               padding: EdgeInsets.fromLTRB(25.0, 50.0, 25.0, 10.0),
-              child: Column(
-                children: [
-                  SearchTextField(),
-                  SizedBox(
-                    height: 15.0,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      PickDateButton(),
-                    ],
-                  )
-                ],
-              ),
+              child: SearchTextField(),
             ),
           ),
         ),
-        //TODO: Replace with API request.
         SliverList(
           delegate: SliverChildListDelegate(courses),
         ),
@@ -93,6 +79,12 @@ class SearchTextField extends StatefulWidget {
 class _SearchTextFieldState extends State<SearchTextField> {
 
   final _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -120,40 +112,6 @@ class _SearchTextFieldState extends State<SearchTextField> {
       onEditingComplete: () {
         FocusScope.of(context).unfocus();
         print(_searchController.text);
-      },
-    );
-  }
-}
-
-
-class PickDateButton extends StatefulWidget {
-  @override
-  _PickDateButtonState createState() => _PickDateButtonState();
-}
-
-class _PickDateButtonState extends State<PickDateButton> {
-
-  DateTime _selectedDate = DateTime.now();
-
-  void changeSelectedDate(DateTime date) {
-    setState(() {
-      _selectedDate = date;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return RaisedButton(
-      child: Text(_selectedDate.year.toString() + '-'
-          + _selectedDate.month.toString() + '-'
-          + _selectedDate.day.toString()),
-      onPressed: () {
-        showDatePicker(
-          context: context,
-          initialDate: _selectedDate,
-          firstDate: DateTime.now(),
-          lastDate: DateTime.now().add(Duration(days: 365)),
-        ).then((date) => changeSelectedDate(date));
       },
     );
   }

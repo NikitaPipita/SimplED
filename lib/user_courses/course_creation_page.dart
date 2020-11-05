@@ -70,7 +70,6 @@ class _CourseCreationPageState extends State<CourseCreationPage> {
             ? [
               IconButton(
                 icon: Icon(Icons.delete_outline),
-                //TODO: Implement delete of course.
                 onPressed: () {
                   Course course = Course(id: widget.courseInfo.id);
                   widget.userCoursesPageUpdate(course, 'delete');
