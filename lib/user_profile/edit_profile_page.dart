@@ -3,24 +3,30 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../api_interection/authorized_user_info.dart';
+import '../api_interection/preload_info.dart';
+
+enum UpdateUserProfilePageFlag {
+  update
+}
+
 class EditProfilePage extends StatefulWidget {
-  final _userFirstNameController;
-  final _userLastNameController;
-  final _userDescriptionController;
+  final getPhotoFileFromTheChild;
+  final userFirstNameController;
+  final userLastNameController;
+  final userDescriptionController;
 
   EditProfilePage(
-      this._userFirstNameController,
-      this._userLastNameController,
-      this._userDescriptionController);
+      this.getPhotoFileFromTheChild,
+      this.userFirstNameController,
+      this.userLastNameController,
+      this.userDescriptionController);
 
   @override
   _EditProfilePageState createState() => _EditProfilePageState();
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-
-  File _image;
-  getPhotoFileFromTheChild(File value) => _image = value;
 
   GlobalKey<FormState> _userProfileFormKey;
 
@@ -55,15 +61,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ProfilePhoto(getPhotoFileFromTheChild),
+              ProfilePhoto(widget.getPhotoFileFromTheChild),
               SizedBox(
                 height: 15.0,
               ),
               ProfileInfoTextForm(
                 _userProfileFormKey,
-                widget._userFirstNameController,
-                widget._userLastNameController,
-                widget._userDescriptionController,
+                widget.userFirstNameController,
+                widget.userLastNameController,
+                widget.userDescriptionController,
               ),
               SizedBox(
                 height: 15.0,
@@ -83,7 +89,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         if(_userProfileFormKey.currentState.validate()) {
           Navigator.pop(
             context,
-            'update',
+            UpdateUserProfilePageFlag.update,
           );
         }
       },
@@ -110,8 +116,8 @@ class _ProfilePhotoState extends State<ProfilePhoto> {
 
     setState(() {
       if (pickedFile != null) {
-        widget.sendPhotoFileToTheParent(_image);
         _image = File(pickedFile.path);
+        widget.sendPhotoFileToTheParent(_image);
       } else {
         print('No image selected.');
       }
@@ -122,7 +128,8 @@ class _ProfilePhotoState extends State<ProfilePhoto> {
   Widget build(BuildContext context) {
     return CircleAvatar(
       backgroundImage: _image == null
-          ? NetworkImage('https://w1.pngwing.com/pngs/743/500/png-transparent-circle-silhouette-logo-user-user-profile-green-facial-expression-nose-cartoon.png')
+          ? NetworkImage(PreloadInfo.cloudUrl + PreloadInfo.cloudName +
+          '/' + AuthorizedUserInfo.userInfo.imageUrl)
           : Image.file(_image).image,
       radius: 150.0,
       child: Align(

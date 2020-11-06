@@ -21,6 +21,7 @@ environment:
   sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
+  cloudinary_client: ^0.0.9
   http: ^0.12.2
   hexcolor: ^1.0.6
   image_picker: ^0.6.7+12
@@ -44,6 +45,7 @@ dev_dependencies:
 flutter:
   assets:
     - assets/course_default_picture.svg
+    - assets/keys.json
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

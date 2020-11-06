@@ -5,9 +5,15 @@ import '../api_interection/preload_info.dart';
 import '../user_courses/course_creation_page.dart';
 import 'course_page.dart';
 
+enum CourseViewType {
+  view,
+  enrolled,
+  created
+}
+
 class CourseCard extends StatelessWidget {
   final Course courseInfo;
-  final String status;
+  final CourseViewType status;
   final Function userCoursesPageUpdate;
 
   final courseCardShape = RoundedRectangleBorder
@@ -26,12 +32,12 @@ class CourseCard extends StatelessWidget {
         child: FlatButton(
           shape: courseCardShape,
           onPressed: () {
-            if (status == 'view' || status == 'added') {
+            if (status == CourseViewType.view || status == CourseViewType.enrolled) {
               Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => CoursePage())
               );
-            } else if (status == 'created') {
+            } else if (status == CourseViewType.created) {
               Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) =>
