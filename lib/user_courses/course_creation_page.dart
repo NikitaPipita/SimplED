@@ -1,11 +1,18 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:cloudinary_client/cloudinary_client.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../api_interection/data_models.dart';
 import '../api_interection/preload_info.dart';
+
+enum HttpRequestType {
+  create,
+  update,
+  delete
+}
 
 class CourseCreationPage extends StatefulWidget {
   final Function userCoursesPageUpdate;
@@ -22,6 +29,7 @@ class CourseCreationPage extends StatefulWidget {
 
 class _CourseCreationPageState extends State<CourseCreationPage> {
 
+  CloudinaryClient _cloudinary;
   File _image;
   getPhotoFileFromTheChild(File value) => _image = value;
 
@@ -35,6 +43,12 @@ class _CourseCreationPageState extends State<CourseCreationPage> {
   @override
   void initState() {
     super.initState();
+
+    _cloudinary = CloudinaryClient(
+        PreloadInfo.apiKey,
+        PreloadInfo.apiSecret,
+        PreloadInfo.cloudName);
+
     _courseFormKey = GlobalKey<FormState>();
     _courseTitleController = TextEditingController();
     _courseDescriptionController = TextEditingController();
@@ -72,7 +86,7 @@ class _CourseCreationPageState extends State<CourseCreationPage> {
                 icon: Icon(Icons.delete_outline),
                 onPressed: () {
                   Course course = Course(id: widget.courseInfo.id);
-                  widget.userCoursesPageUpdate(course, 'delete');
+                  widget.userCoursesPageUpdate(course, HttpRequestType.delete);
                   Navigator.pop(context);
                 },
               ),]
@@ -83,8 +97,10 @@ class _CourseCreationPageState extends State<CourseCreationPage> {
           padding: EdgeInsets.all(16.0),
           child: Column(
             children: [
-              //TODO: Implement course photo view.
-              CoursePhoto(getPhotoFileFromTheChild),
+              CoursePhoto(
+                getPhotoFileFromTheChild,
+                widget.courseInfo != null ? widget.courseInfo.imageUrl : null
+              ),
               SizedBox(
                 height: 15.0,
               ),
@@ -130,7 +146,7 @@ class _CourseCreationPageState extends State<CourseCreationPage> {
   Widget createCourseButton() {
     return RaisedButton(
       child: widget.courseInfo == null ? Text('PUBLISH') : Text('UPDATE'),
-      onPressed: () {
+      onPressed: () async {
         if (_courseFormKey.currentState.validate()) {
 
           String category;
@@ -149,25 +165,35 @@ class _CourseCreationPageState extends State<CourseCreationPage> {
             }
           }
 
+          String imageUrl;
+          if (_image != null) {
+            var response = await _cloudinary.uploadImage(_image.path, folder: 'course_pics');
+            imageUrl = 'v' + response.version.toString() +
+                '/' + response.public_id +
+                '.' + response.format;
+          }
+
           if (widget.courseInfo == null) {
             Course course = Course(
+              imageUrl: imageUrl,
               title: _courseTitleController.text,
               description: _courseDescriptionController.text,
               category: category,
               language: language,
               startDate: _courseDateController.text,
             );
-            widget.userCoursesPageUpdate(course, 'create');
+            widget.userCoursesPageUpdate(course, HttpRequestType.create);
           } else {
             Course course = Course(
               id: widget.courseInfo.id,
+              imageUrl: imageUrl,
               title: _courseTitleController.text,
               description: _courseDescriptionController.text,
               category: category,
               language: language,
               startDate: _courseDateController.text,
             );
-            widget.userCoursesPageUpdate(course, 'update');
+            widget.userCoursesPageUpdate(course, HttpRequestType.update);
           }
 
           Navigator.pop(context);
@@ -180,8 +206,11 @@ class _CourseCreationPageState extends State<CourseCreationPage> {
 
 class CoursePhoto extends StatefulWidget {
   final Function sendPhotoFileToTheParent;
+  final courseImageUrl;
 
-  CoursePhoto(this.sendPhotoFileToTheParent);
+  CoursePhoto(
+      this.sendPhotoFileToTheParent,
+      this.courseImageUrl,);
 
   @override
   _CoursePhotoState createState() => _CoursePhotoState();
@@ -196,8 +225,8 @@ class _CoursePhotoState extends State<CoursePhoto> {
 
     setState(() {
       if (pickedFile != null) {
-        widget.sendPhotoFileToTheParent(_image);
         _image = File(pickedFile.path);
+        widget.sendPhotoFileToTheParent(_image);
       } else {
         print('No image selected.');
       }
@@ -215,7 +244,9 @@ class _CoursePhotoState extends State<CoursePhoto> {
             child: Padding(
               padding: EdgeInsets.all(16.0),
               child: _image == null
-                  ? SvgPicture.asset('assets/course_default_picture.svg')
+                  ? widget.courseImageUrl != null
+                    ? Image.network(PreloadInfo.cloudUrl + PreloadInfo.cloudName + '/' + widget.courseImageUrl)
+                    : SvgPicture.asset('assets/course_default_picture.svg')
                   : Image.file(_image),
             ),
           ),

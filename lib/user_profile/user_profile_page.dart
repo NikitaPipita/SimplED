@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:cloudinary_client/cloudinary_client.dart';
 import 'package:flutter/material.dart';
+import 'package:simpleed/api_interection/preload_info.dart';
 
 import '../api_interection/authorized_user_info.dart';
 import '../api_interection/data_models.dart';
@@ -21,14 +25,43 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
   ];
   TabController _tabController;
 
+  CloudinaryClient _cloudinary;
+  File _image;
+  getPhotoFileFromTheChild(File value) => _image = value;
+
   TextEditingController _userFirstNameController;
   TextEditingController _userLastNameController;
   TextEditingController _userDescriptionController;
+
+  void updateUserInfo() async{
+    AuthorizedUserInfo.needToUpdateInformation = true;
+    String imageUrl;
+    if (_image != null) {
+      var response = await _cloudinary.uploadImage(_image.path, folder: 'profile_pics');
+      imageUrl = 'v' + response.version.toString() +
+          '/' + response.public_id +
+          '.' + response.format;
+    }
+    setState(() {
+      _futureUser = patchUpdateUserInfo(
+        AuthorizedUserInfo.userInfo.id,
+        image: imageUrl,
+        firstName: _userFirstNameController.text,
+        lastName: _userLastNameController.text,
+        biography: _userDescriptionController.text,
+      );
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(vsync: this, length: profileTabs.length);
+
+    _cloudinary = CloudinaryClient(
+        PreloadInfo.apiKey,
+        PreloadInfo.apiSecret,
+        PreloadInfo.cloudName);
 
     _userFirstNameController = TextEditingController();
     _userFirstNameController.text = AuthorizedUserInfo.userInfo.firstName;
@@ -90,23 +123,15 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                   context,
                   MaterialPageRoute(builder: (context) =>
                       EditProfilePage(
+                        getPhotoFileFromTheChild,
                         _userFirstNameController,
                         _userLastNameController,
                         _userDescriptionController,
                       ),
                   ),
                 );
-
-                if (result == 'update') {
-                  AuthorizedUserInfo.needToUpdateInformation = true;
-                  setState(() {
-                    _futureUser = patchUpdateUserInfo(
-                      AuthorizedUserInfo.userInfo.id,
-                      firstName: _userFirstNameController.text,
-                      lastName: _userLastNameController.text,
-                      biography: _userDescriptionController.text,
-                    );
-                  });
+                if (result == UpdateUserProfilePageFlag.update) {
+                  updateUserInfo();
                 }
               },
             ),
@@ -125,9 +150,12 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                 child: Column(
                   children: [
                     CircleAvatar(
-                      //TODO: Fix photo view
-//                      backgroundImage: NetworkImage(AuthorizedUserInfo.userInfo.imageUrl),
-                      backgroundImage: NetworkImage('https://w1.pngwing.com/pngs/743/500/png-transparent-circle-silhouette-logo-user-user-profile-green-facial-expression-nose-cartoon.png'),
+                      backgroundImage: NetworkImage(
+                          PreloadInfo.cloudUrl +
+                          PreloadInfo.cloudName +
+                          '/' +
+                          AuthorizedUserInfo.userInfo.imageUrl
+                      ),
                       radius: 150.0,
                     ),
                     SizedBox(

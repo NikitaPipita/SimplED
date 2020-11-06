@@ -31,7 +31,7 @@ class _CourseListState extends State<CourseList> {
             if (!_isFutureLoaded) {
               _isFutureLoaded = true;
               for (Course course in snapshot.data) {
-                courses.add(CourseCard(course, 'view'));
+                courses.add(CourseCard(course, CourseViewType.view));
               }
             }
             return courseListCustomScrollView();

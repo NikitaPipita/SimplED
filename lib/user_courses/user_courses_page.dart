@@ -23,12 +23,12 @@ class _UserCoursesPageState extends State<UserCoursesPage> with SingleTickerProv
   final userCourses = <Widget>[];
   final createdCourses = <Widget>[];
 
-  void reloadPage(Course course, String requestType) async {
-    if (requestType == 'create') {
+  void reloadPage(Course course, HttpRequestType requestType) async {
+    if (requestType == HttpRequestType.create) {
       await createCourse(course);
-    } else if (requestType == 'update') {
+    } else if (requestType == HttpRequestType.update) {
       await patchUpdateCourseInfo(course);
-    } else if (requestType == 'delete') {
+    } else if (requestType == HttpRequestType.delete) {
       await deleteCourse(course.id);
     }
     //TODO: Repair page reload.
@@ -69,13 +69,13 @@ class _UserCoursesPageState extends State<UserCoursesPage> with SingleTickerProv
             if (!_isFutureLoaded) {
               _isFutureLoaded = true;
               for (Course course in snapshot.data.userCourses) {
-                userCourses.add(CourseCard(course, 'added'));
+                userCourses.add(CourseCard(course, CourseViewType.enrolled));
               }
               for (Course course in snapshot.data.createdCourses) {
                 createdCourses.add(
                     CourseCard(
                       course,
-                      'created',
+                      CourseViewType.created,
                       userCoursesPageUpdate: reloadPage,
                     )
                 );
@@ -90,7 +90,6 @@ class _UserCoursesPageState extends State<UserCoursesPage> with SingleTickerProv
           return Center(
               child: CircularProgressIndicator()
           );
-
         },
       ),
     );

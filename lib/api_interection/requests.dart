@@ -94,7 +94,6 @@ Future<void> createCourse(Course course) async {
     headers: <String, String>{
       'Content-Type': 'application/json',
     },
-    //TODO: Implement course image post.
     body: jsonEncode(fieldsToPost),
   );
 
@@ -121,7 +120,6 @@ Future<void> patchUpdateCourseInfo(Course course) async {
     headers: <String, String>{
       'Content-Type': 'application/json',
     },
-    //TODO: Implement course image update.
     body: jsonEncode(fieldsToUpdate),
   );
 
@@ -146,7 +144,6 @@ Future<User> patchUpdateUserInfo
     headers: <String, String>{
         'Content-Type': 'application/json',
     },
-    //TODO: Implement profile image update.
     body: jsonEncode(fieldsToUpdate),
   );
 
