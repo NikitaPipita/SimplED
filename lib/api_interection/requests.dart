@@ -48,6 +48,18 @@ Future<List<Course>> getCourses() async {
   }
 }
 
+Future<List<Course>> searchCourses(String query) async {
+  final response =
+  await http.get('http://simpled-api.herokuapp.com/courses/?search=' + query);
+
+  if (response.statusCode == 200) {
+    var data = jsonDecode(response.body) as List;
+    return data.map((e) => Course.fromJson(e)).toList();
+  } else {
+    throw Exception('Failed to load searched courses');
+  }
+}
+
 Future<User> getUserInfo(int id) async {
   final response =
   await http.get('http://simpled-api.herokuapp.com/users/$id');
