@@ -65,11 +65,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
               SizedBox(
                 height: 15.0,
               ),
-              ProfileInfoTextForm(
-                _userProfileFormKey,
-                widget.userFirstNameController,
-                widget.userLastNameController,
-                widget.userDescriptionController,
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ProfileInfoTextForm(
+                  _userProfileFormKey,
+                  widget.userFirstNameController,
+                  widget.userLastNameController,
+                  widget.userDescriptionController,
+                ),
               ),
               SizedBox(
                 height: 15.0,
@@ -173,7 +176,6 @@ class _ProfileInfoTextFormState extends State<ProfileInfoTextForm> {
             decoration: InputDecoration(
               labelText: 'Name',
               hintText: 'Enter your new name',
-              prefixIcon: Icon(Icons.person_outline),
             ),
             validator: (value) {
               if (value.isEmpty) {
@@ -187,7 +189,6 @@ class _ProfileInfoTextFormState extends State<ProfileInfoTextForm> {
             decoration: InputDecoration(
               labelText: 'Surname',
               hintText: 'Enter your new surname',
-              prefixIcon: Icon(Icons.person_outline),
             ),
             validator: (value) {
               if (value.isEmpty) {
@@ -203,7 +204,6 @@ class _ProfileInfoTextFormState extends State<ProfileInfoTextForm> {
             decoration: InputDecoration(
               labelText: 'Profile Description',
               hintText: 'Write a short description about yourself',
-              prefixIcon: Icon(Icons.description_outlined),
             ),
           ),
         ],

@@ -141,7 +141,9 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                 icon: const Icon(Icons.exit_to_app),
                 tooltip: 'Exit',
                 //TODO: implement exit from profile
-                onPressed: () { /* ... */ },
+                onPressed: () {
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                },
               ),
             ],
             flexibleSpace: FlexibleSpaceBar(
@@ -194,7 +196,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
         children: [
           ProfileDescription(),
           AchievementsList(),
-        ],  // <--- the array item is a ListView
+        ],
       ),
     );
   }
