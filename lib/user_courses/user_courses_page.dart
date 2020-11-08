@@ -57,6 +57,7 @@ class _UserCoursesPageState extends State<UserCoursesPage> with SingleTickerProv
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         flexibleSpace: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
