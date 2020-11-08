@@ -57,9 +57,14 @@ class _UserCoursesPageState extends State<UserCoursesPage> with SingleTickerProv
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: coursesTabs,
+        flexibleSpace: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            TabBar(
+              controller: _tabController,
+              tabs: coursesTabs,
+            ),
+          ],
         ),
       ),
       body: FutureBuilder(

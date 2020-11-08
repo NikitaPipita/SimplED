@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:simpleed/api_interection/preload_info.dart';
 
 import '../api_interection/data_models.dart';
 import '../api_interection/requests.dart';
@@ -14,6 +15,14 @@ class _CourseListState extends State<CourseList> {
   Future<List<Course>> _futureCourses;
   bool _isFutureLoaded = false;
   final courses = <Widget>[];
+
+  bool searchAction = false;
+
+  void changeSearchAction() {
+    setState(() {
+      searchAction = !searchAction;
+    });
+  }
 
   @override
   void initState() {
@@ -52,15 +61,17 @@ class _CourseListState extends State<CourseList> {
     return CustomScrollView(
       slivers: [
         SliverAppBar(
-          expandedHeight: 200.0,
           floating: true,
           automaticallyImplyLeading: false,
-          flexibleSpace: FlexibleSpaceBar(
-            background: Padding(
-              padding: EdgeInsets.fromLTRB(25.0, 50.0, 25.0, 10.0),
-              child: SearchTextField(),
+          title: Text('Explore'),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () {
+                showSearch(context: context, delegate: CourseSearch());
+              },
             ),
-          ),
+          ],
         ),
         SliverList(
           delegate: SliverChildListDelegate(courses),
@@ -70,49 +81,97 @@ class _CourseListState extends State<CourseList> {
   }
 }
 
-
-class SearchTextField extends StatefulWidget {
-  @override
-  _SearchTextFieldState createState() => _SearchTextFieldState();
-}
-
-class _SearchTextFieldState extends State<SearchTextField> {
-
-  final _searchController = TextEditingController();
+class CourseSearch extends SearchDelegate<String> {
 
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: _searchController,
-      textInputAction: TextInputAction.search,
-      decoration: InputDecoration(
-        prefixIcon: Icon(Icons.search),
-        filled: true,
-        fillColor: Colors.white,
-        hintText: 'Search Course...',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(90.0),
-          borderSide: BorderSide(),
-        ),
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
       ),
-      //TODO: Send new request to the server.
-      //TODO: Replace course list with new values and set new state.
-      onEditingComplete: () {
-        FocusScope.of(context).unfocus();
-        print(_searchController.text);
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, null);
       },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    if (query.length == 0) return buildSuggestions(context);
+
+    Future<List<Course>> searchedCoursesFuture = searchCourses(query);
+    final searchedCourses = <Widget>[];
+    bool isFutureLoaded = false;
+
+    return FutureBuilder(
+      //TODO: Repair reload page after closing course page.
+      future: searchedCoursesFuture,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          if (!isFutureLoaded) {
+            for (Course course in snapshot.data) {
+              searchedCourses.add(CourseCard(course, CourseViewType.view));
+            }
+            isFutureLoaded = true;
+          }
+          return ListView(
+            children: searchedCourses,
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+              child: Text("${snapshot.error}")
+          );
+        }
+        return Center(
+            child: CircularProgressIndicator()
+        );
+      },
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    final categories = <String>[];
+    query.isEmpty
+        ? categories.addAll(PreloadInfo.coursesCategories.values)
+        : categories.addAll(PreloadInfo.coursesCategories.values.where((element) =>
+        element.toLowerCase().startsWith(query.toLowerCase())).toList());
+
+    return ListView.builder(
+      itemBuilder: (context, index) => ListTile(
+        title: RichText(
+          text: TextSpan(
+            text: categories[index].substring(0, query.length),
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+            children: [
+              TextSpan(
+                text: categories[index].substring(query.length),
+                style: TextStyle(
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+        ),
+        onTap: () {
+          query = categories[index];
+        },
+      ),
+      itemCount: categories.length,
     );
   }
 }

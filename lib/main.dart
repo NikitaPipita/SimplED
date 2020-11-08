@@ -133,7 +133,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
       items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(
           icon: Icon(Icons.search),
-          label: "Search",
+          label: "Explore",
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.book),
