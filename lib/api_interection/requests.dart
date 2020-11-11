@@ -31,18 +31,20 @@ Future<List<CourseLanguage>> getCoursesLanguages() async {
   }
 }
 
-Future<List<Course>> getCourses() async {
+Future<Map<String, List<Course>>> getCourses() async {
   final response =
   await http.get('http://simpled-api.herokuapp.com/courses/');
 
   if (response.statusCode == 200) {
     var data = jsonDecode(response.body);
-    var courses = <Course>[];
+    var coursesByCategory = <String, List<Course>>{};
     for (String key in PreloadInfo.coursesCategories.keys) {
       var categoryData = data[key] as List;
+      var courses = <Course>[];
       courses.addAll(categoryData.map((e) => Course.fromJson(e)).toList());
+      coursesByCategory[key] = courses;
     }
-    return courses;
+    return coursesByCategory;
   } else {
     throw Exception('Failed to load courses');
   }
