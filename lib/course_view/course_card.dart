@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../api_interection/data_models.dart';
 import '../api_interection/preload_info.dart';
-import '../user_courses/course_creation_page.dart';
 import 'course_page.dart';
 
 enum CourseViewType {
   view,
+  searchView,
   enrolled,
   created
 }
@@ -25,6 +25,7 @@ class CourseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 200,
+      width: status == CourseViewType.view ? 250 : double.infinity,
       padding: EdgeInsets.all(10.0),
       child: Card(
         shape: courseCardShape,
@@ -32,19 +33,26 @@ class CourseCard extends StatelessWidget {
         child: FlatButton(
           shape: courseCardShape,
           onPressed: () {
-            if (status == CourseViewType.view || status == CourseViewType.enrolled) {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CoursePage())
-              );
-            } else if (status == CourseViewType.created) {
+            if (status == CourseViewType.created) {
               Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) =>
-                      CourseCreationPage(
-                        userCoursesPageUpdate,
-                        courseInfo: courseInfo,
+                      CoursePage(
+                        courseInfo,
+                        status,
+                        userCoursesPageUpdate: userCoursesPageUpdate,
                       )
+//                      CourseCreationPage(
+//                        userCoursesPageUpdate,
+//                        courseInfo: courseInfo,
+//                      )
+                  )
+              );
+            } else {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) =>
+                      CoursePage(courseInfo, status)
                   )
               );
             }
@@ -56,24 +64,27 @@ class CourseCard extends StatelessWidget {
               children: [
                 Text(
                   courseInfo.title,
-                  maxLines: 2,
+                  maxLines: status == CourseViewType.view ? 1 : 2,
                   style: TextStyle(
-                    fontSize: 20.0,
+                    fontSize: status == CourseViewType.view ? 16.0 : 20.0,
                     fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(
+                  height: status == CourseViewType.view ? 0 : 5.0,
+                ),
+                Visibility(
+                  visible: status == CourseViewType.view ? false : true,
+                  child: Text(
+                    PreloadInfo.coursesCategories[courseInfo.category],
                   ),
                 ),
                 SizedBox(
                   height: 5.0,
                 ),
                 Text(
-                  PreloadInfo.coursesCategories[courseInfo.category],
-                ),
-                SizedBox(
-                  height: 5.0,
-                ),
-                Text(
                   courseInfo.description,
-                  maxLines: 4,
+                  maxLines: status == CourseViewType.view ? 2 : 4,
                 ),
                 Flexible(child: Container()),
                 SizedBox(
