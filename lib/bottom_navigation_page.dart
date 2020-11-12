@@ -16,8 +16,6 @@ class BottomNavigation extends StatefulWidget {
 
 class _BottomNavigationState extends State<BottomNavigation> {
 
-  bool _isInfoPreloaded;
-
   final bottomNavBarPages = [
     CourseList(),
     UserCoursesPage(),
@@ -37,19 +35,15 @@ class _BottomNavigationState extends State<BottomNavigation> {
   void initState() {
     super.initState();
     PreloadInfo.loadKeys();
-    _isInfoPreloaded = false;
     _selectedPageIndex = 0;
   }
 
   @override
   Widget build(BuildContext context) {
-    //TODO: prevent navigator pop.
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
-        body: _isInfoPreloaded == false
-            ? preloadInfoFutureBuilder()
-            : bottomNavBarPages[_selectedPageIndex],
+        body: preloadInfoFutureBuilder(),
         bottomNavigationBar: bottomNavBar(),
       ),
     );
@@ -57,47 +51,10 @@ class _BottomNavigationState extends State<BottomNavigation> {
 
   Widget preloadInfoFutureBuilder() {
     return FutureBuilder(
-      future: getCoursesCategories(),
+      future: getCoursesCategoriesAndLanguages(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          for (CourseCategory category in snapshot.data) {
-            PreloadInfo.coursesCategories[category.dbValue] = category.title;
-          }
-          return FutureBuilder(
-            future: getCoursesLanguages(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                for (CourseLanguage language in snapshot.data) {
-                  PreloadInfo.coursesLanguages[language.dbValue] = language.title;
-                }
-                //TODO: Replace with authorization/registration.
-                return FutureBuilder(
-                  future: getUserInfo(6),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      AuthorizedUserInfo.needToUpdateInformation = false;
-                      AuthorizedUserInfo.userInfo = snapshot.data;
-                      return bottomNavBarPages[_selectedPageIndex];
-                    } else if (snapshot.hasError) {
-                      return Center(
-                          child: Text("${snapshot.error}")
-                      );
-                    }
-                    return Center(
-                        child: CircularProgressIndicator()
-                    );
-                  },
-                );
-              } else if (snapshot.hasError) {
-                return Center(
-                    child: Text("${snapshot.error}")
-                );
-              }
-              return Center(
-                  child: CircularProgressIndicator()
-              );
-            },
-          );
+          return bottomNavBarPages[_selectedPageIndex];
         } else if (snapshot.hasError) {
           return Center(
               child: Text("${snapshot.error}")

@@ -173,6 +173,7 @@ class _ProfileInfoTextFormState extends State<ProfileInfoTextForm> {
         children: [
           TextFormField(
             controller: widget._userFirstNameController,
+            maxLength: 32,
             decoration: InputDecoration(
               labelText: 'Name',
               hintText: 'Enter your new name',
@@ -186,6 +187,7 @@ class _ProfileInfoTextFormState extends State<ProfileInfoTextForm> {
           ),
           TextFormField(
             controller: widget._userLastNameController,
+            maxLength: 32,
             decoration: InputDecoration(
               labelText: 'Surname',
               hintText: 'Enter your new surname',
