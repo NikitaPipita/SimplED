@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 class CourseCategory {
   final String dbValue;
   final String title;

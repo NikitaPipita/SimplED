@@ -2,10 +2,11 @@ import 'dart:io';
 
 import 'package:cloudinary_client/cloudinary_client.dart';
 import 'package:flutter/material.dart';
-import 'package:simpleed/api_interection/preload_info.dart';
 
 import '../api_interection/authorized_user_info.dart';
 import '../api_interection/data_models.dart';
+import '../api_interection/json_web_token.dart';
+import '../api_interection/preload_info.dart';
 import '../api_interection/requests.dart';
 import 'achievements_card.dart';
 import 'edit_profile_page.dart';
@@ -140,8 +141,11 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
               IconButton(
                 icon: const Icon(Icons.exit_to_app),
                 tooltip: 'Exit',
-                //TODO: implement exit from profile
                 onPressed: () {
+                  JsonWebToken.accessToken = null;
+                  JsonWebToken.refreshToken = null;
+                  AuthorizedUserInfo.userInfo = null;
+                  AuthorizedUserInfo.needToUpdateInformation = true;
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 },
               ),

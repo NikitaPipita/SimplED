@@ -1,6 +1,9 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:simpleed/api_interection/requests.dart';
 
+import '../api_interection/authorized_user_info.dart';
+import '../api_interection/json_web_token.dart';
 import '../bottom_navigation_page.dart';
 import 'registration_page.dart';
 
@@ -10,13 +13,18 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  GlobalKey<ScaffoldState> _scaffoldKey;
+
   GlobalKey<FormState> _loginFormKey;
   TextEditingController _emailController;
   TextEditingController _passwordController;
 
+  bool _singInButtonLoading = false;
+
   @override
   void initState() {
     super.initState();
+    _scaffoldKey = GlobalKey<ScaffoldState>();
     _loginFormKey = GlobalKey<FormState>();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
@@ -32,6 +40,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -56,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(
                   height: 16.0,
                 ),
-                singInButton(),
+                singInButton(_scaffoldKey),
                 SizedBox(
                   height: 16.0,
                 ),
@@ -69,23 +78,38 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget singInButton() {
+  Widget singInButton(GlobalKey<ScaffoldState> _scaffoldKey) {
     return RaisedButton(
-      child: Text(
-          'SING IN'
-      ),
-      onPressed: () {
-        //TODO: implement request that checks info at the server.
+      child: _singInButtonLoading
+          ? CircularProgressIndicator()
+          : Text('SING IN'),
+      onPressed: () async {
         if (_loginFormKey.currentState.validate()) {
-          _emailController.text = '';
-          _passwordController.text = '';
-          //TODO: implement alert dialog if email or password are incorrect.
-          Navigator.push(
-            context,
-            MaterialPageRoute(
+          setState(() {
+            _singInButtonLoading = true;
+          });
+          int userId = await JsonWebToken.passwordAuthentication(
+              _emailController.text, _passwordController.text);
+          if (userId != null) {
+            _emailController.text = '';
+            _passwordController.text = '';
+            AuthorizedUserInfo.userInfo = await getUserInfo(userId);
+            AuthorizedUserInfo.needToUpdateInformation = false;
+            Navigator.push(
+              context,
+              MaterialPageRoute(
                 builder: (context) => BottomNavigation(),
-            ),
-          );
+              ),
+            );
+          } else {
+            final snackBar = SnackBar(
+              content: Text('Email or password entered incorrectly')
+            );
+            _scaffoldKey.currentState.showSnackBar(snackBar);
+          }
+          setState(() {
+            _singInButtonLoading = false;
+          });
         }
       },
     );

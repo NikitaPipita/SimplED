@@ -2,6 +2,10 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 
 import '../bottom_navigation_page.dart';
+import '../api_interection/authorized_user_info.dart';
+import '../api_interection/data_models.dart';
+import '../api_interection/json_web_token.dart';
+import '../api_interection/requests.dart';
 
 class RegistrationPage extends StatefulWidget {
   @override
@@ -9,6 +13,7 @@ class RegistrationPage extends StatefulWidget {
 }
 
 class _RegistrationPageState extends State<RegistrationPage> {
+  GlobalKey<ScaffoldState> _scaffoldKey;
   GlobalKey<FormState> _registrationFormKey;
   TextEditingController _emailController;
   TextEditingController _fistNameController;
@@ -16,9 +21,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
   TextEditingController _passwordController;
   TextEditingController _repeatPasswordController;
 
+  bool _singUpButtonLoading = false;
+
   @override
   void initState() {
     super.initState();
+    _scaffoldKey = GlobalKey<ScaffoldState>();
     _registrationFormKey = GlobalKey<FormState>();
     _emailController = TextEditingController();
     _fistNameController = TextEditingController();
@@ -40,6 +48,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -68,19 +77,41 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   Widget singUpButton() {
     return RaisedButton(
-      child: Text(
-          'SING UP'
-      ),
-      onPressed: () {
-        //TODO: implement request that create new user.
+      child: _singUpButtonLoading
+          ? CircularProgressIndicator()
+          : Text('SING UP'),
+      onPressed: () async {
         if (_registrationFormKey.currentState.validate()) {
-          //TODO: implement alert dialog if email is already used.
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => BottomNavigation(),
-            ),
+          setState(() {
+            _singUpButtonLoading = true;
+          });
+          String rememberPassword = _passwordController.text;
+          User user = User(
+            email: _emailController.text,
+            firstName: _fistNameController.text,
+            lastName: _secondNameController.text,
           );
+          AuthorizedUserInfo.userInfo = await createUser
+            (user, _passwordController.text);
+          if (AuthorizedUserInfo.userInfo != null) {
+            AuthorizedUserInfo.needToUpdateInformation = false;
+            await JsonWebToken.passwordAuthentication
+              (AuthorizedUserInfo.userInfo.email, rememberPassword);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BottomNavigation(),
+              ),
+            );
+          } else {
+            final snackBar = SnackBar(
+                content: Text('User with this email address already exists')
+            );
+            _scaffoldKey.currentState.showSnackBar(snackBar);
+          }
+          setState(() {
+            _singUpButtonLoading = false;
+          });
         }
       },
     );
@@ -134,6 +165,7 @@ class _RegistrationTextFormState extends State<RegistrationTextForm> {
           TextFormField(
             controller: widget._fistNameController,
             autocorrect: false,
+            maxLength: 32,
             decoration: InputDecoration(
               labelText: 'Name',
               hintText: 'Enter your name',
@@ -148,6 +180,7 @@ class _RegistrationTextFormState extends State<RegistrationTextForm> {
           TextFormField(
             controller: widget._secondNameController,
             autocorrect: false,
+            maxLength: 32,
             decoration: InputDecoration(
               labelText: 'Surname',
               hintText: 'Enter your surname',
