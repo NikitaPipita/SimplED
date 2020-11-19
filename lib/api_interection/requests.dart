@@ -8,7 +8,7 @@ import 'data_models.dart';
 import 'json_web_token.dart';
 import 'preload_info.dart';
 
-Future<void> getCoursesCategoriesAndLanguages() async {
+Future<bool> getCoursesCategoriesAndLanguages() async {
   List<CourseCategory> categories = await getCoursesCategories();
   for (CourseCategory category in categories) {
     PreloadInfo.coursesCategories[category.dbValue] = category.title;
@@ -18,6 +18,7 @@ Future<void> getCoursesCategoriesAndLanguages() async {
   for (CourseLanguage language in languages) {
     PreloadInfo.coursesLanguages[language.dbValue] = language.title;
   }
+  return true;
 }
 
 Future<List<CourseCategory>> getCoursesCategories() async {
@@ -285,7 +286,7 @@ Future<void> patchUpdateCourseInfo(Course course) async {
     fieldsToUpdate['language'] = course.language;
     fieldsToUpdate['start_date'] = course.startDate;
 
-    final response = await http.post(
+    final response = await http.patch(
       'http://simpled-api.herokuapp.com/courses/${course.id}',
       headers: <String, String> {
         'Content-Type': 'application/json',
