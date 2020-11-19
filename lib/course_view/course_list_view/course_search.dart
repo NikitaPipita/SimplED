@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../api_interection/data_models.dart';
-import '../api_interection/preload_info.dart';
-import '../api_interection/requests.dart';
-import 'course_card.dart';
+import '../../api_interection/data_models.dart';
+import '../../api_interection/preload_info.dart';
+import '../../api_interection/requests.dart';
+import '../course_card.dart';
 
 class CourseSearch extends SearchDelegate<String> {
 

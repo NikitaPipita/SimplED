@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
 
-import 'api_interection/authorized_user_info.dart';
-import 'api_interection/data_models.dart';
 import 'api_interection/preload_info.dart';
 import 'api_interection/requests.dart';
-import 'course_view/course_list_page.dart';
+import 'course_view/course_list_view/course_list_page.dart';
 import 'user_courses/user_courses_page.dart';
 import 'user_profile/user_profile_page.dart';
 
