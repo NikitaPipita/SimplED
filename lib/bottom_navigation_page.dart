@@ -16,6 +16,8 @@ class BottomNavigation extends StatefulWidget {
 
 class _BottomNavigationState extends State<BottomNavigation> {
 
+  Future _futureCategoriesAndLanguages;
+  
   final bottomNavBarPages = [
     CourseList(),
     UserCoursesPage(),
@@ -35,6 +37,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
   void initState() {
     super.initState();
     PreloadInfo.loadKeys();
+    _futureCategoriesAndLanguages = getCoursesCategoriesAndLanguages();
     _selectedPageIndex = 0;
   }
 
@@ -51,7 +54,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
 
   Widget preloadInfoFutureBuilder() {
     return FutureBuilder(
-      future: getCoursesCategoriesAndLanguages(),
+      future: _futureCategoriesAndLanguages,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return bottomNavBarPages[_selectedPageIndex];
