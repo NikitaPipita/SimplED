@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:simpleed/api_interection/requests.dart';
+import 'package:simpleed/course_view/course_task/task_card.dart';
 
 import '../api_interection/data_models.dart';
 import '../api_interection/preload_info.dart';
 import '../user_courses/course_creation_page.dart';
 import 'course_card.dart';
+import 'course_task/task_list.dart';
 import 'participant_card.dart';
 
 class CoursePage extends StatefulWidget {
@@ -29,10 +32,14 @@ class _CoursePageState extends State<CoursePage>
 
   TabController _tabController;
 
+  Future _futureCourseTasks;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(vsync: this, length: courseTabs.length);
+
+    _futureCourseTasks = getCourseTasks(widget.courseInfo.id);
   }
 
   @override
@@ -72,13 +79,16 @@ class _CoursePageState extends State<CoursePage>
                                   builder: (context) => CourseCreationPage(
                                         widget.userCoursesPageUpdate,
                                         courseInfo: widget.courseInfo,
-                                      )));
+                                      )
+                              )
+                          );
                         },
                       )
                     ]
                   : [],
               flexibleSpace: FlexibleSpaceBar(
-                background: Image.network(PreloadInfo.cloudUrl +
+                background: Image.network(
+                    PreloadInfo.cloudUrl +
                     PreloadInfo.cloudName +
                     '/' +
                     widget.courseInfo.imageUrl),
@@ -90,11 +100,11 @@ class _CoursePageState extends State<CoursePage>
             ),
           ];
         },
-        body: new TabBarView(
+        body: TabBarView(
           controller: _tabController,
           children: [
             aboutCourse(),
-            Container(),
+            taskListFutureBuilder(),
             Container(),
             CustomScrollView(
               slivers: [
@@ -180,6 +190,32 @@ class _CoursePageState extends State<CoursePage>
           ],
         ),
       ),
+    );
+  }
+
+  Widget taskListFutureBuilder() {
+    TaskListViewType taskListViewType = widget.status == CourseViewType.created
+        ? TaskListViewType.creator
+        : TaskListViewType.participant;
+    var taskList = <Widget>[];
+    return FutureBuilder(
+      future: _futureCourseTasks,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          for (Task task in snapshot.data) {
+            taskList
+                .add(TaskCard(widget.courseInfo.id, taskListViewType, task));
+          }
+          return TaskList(widget.courseInfo.id, taskListViewType, taskList);
+        } else if (snapshot.hasError) {
+          return Center(
+              child: Text("${snapshot.error}")
+          );
+        }
+        return Center(
+            child: CircularProgressIndicator()
+        );
+      },
     );
   }
 }

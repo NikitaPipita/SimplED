@@ -215,6 +215,66 @@ Future<UserCourses> getUserCourses() async {
   }
 }
 
+Future<List<Task>> getCourseTasks(int courseId) async {
+  getResponse() async {
+    final response = await http.get(
+        'http://simpled-api.herokuapp.com/courses/$courseId/tasks/',
+        headers: <String, String> {
+          'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
+        }
+    );
+    return response;
+  }
+
+  List<Task> decodeResponse(http.Response response) {
+    var data = jsonDecode(response.body) as List;
+    return data.map((e) => Task.fromJson(e)).toList();
+  }
+
+  final response = await getResponse();
+  if (response.statusCode == 200) {
+    return decodeResponse(response);
+  } else {
+    await JsonWebToken.refreshCreate();
+    final response = await getResponse();
+    if (response.statusCode == 200) {
+      return decodeResponse(response);
+    } else {
+      throw Exception('Failed to load course id $courseId tasks');
+    }
+  }
+}
+
+Future<List<TaskAnswer>> getCourseTaskAnswers(int courseId, int taskId) async {
+  getResponse() async {
+    final response = await http.get(
+        'http://simpled-api.herokuapp.com/courses/$courseId/tasks/$taskId/solutions/',
+        headers: <String, String> {
+          'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
+        }
+    );
+    return response;
+  }
+
+  List<TaskAnswer> decodeResponse(http.Response response) {
+    var data = jsonDecode(response.body) as List;
+    return data.map((e) => TaskAnswer.fromJson(e)).toList();
+  }
+
+  final response = await getResponse();
+  if (response.statusCode == 200) {
+    return decodeResponse(response);
+  } else {
+    await JsonWebToken.refreshCreate();
+    final response = await getResponse();
+    if (response.statusCode == 200) {
+      return decodeResponse(response);
+    } else {
+      throw Exception('Failed to load course id $courseId task id $taskId answers');
+    }
+  }
+}
+
 Future<void> createCourse(Course course) async {
   getResponse() async {
     var fieldsToPost = <String, String>{};
@@ -272,6 +332,113 @@ Future<User> createUser(User user, String password) async {
     return User.fromJson(jsonDecode(response.body));
   } else {
     throw Exception('Failed to create user');
+  }
+}
+
+Future<void> createTask(Task task, int courseId) async {
+  getResponse() async {
+    var fieldsToPost = <String, String>{};
+
+    /// Convert to json date String format 2019-08-24T14:15:00Z
+    /// from 2019-08-24 and 14:15
+    fieldsToPost['title'] = task.title;
+    fieldsToPost['description'] = task.description;
+    fieldsToPost['deadline'] = task.deadlineDate + 'T'
+        + task.deadlineTime + ':00Z';
+    fieldsToPost['course'] = courseId.toString();
+
+    final response = await http.post(
+      'http://simpled-api.herokuapp.com/courses/$courseId/tasks/',
+      headers: <String, String> {
+        'Content-Type': 'application/json',
+        'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
+      },
+      body: jsonEncode(fieldsToPost),
+    );
+    return response;
+  }
+
+  final response = await getResponse();
+  if (response.statusCode == 201) {
+    print('Task created in course id $courseId');
+  } else {
+    await JsonWebToken.refreshCreate();
+    final response = await getResponse();
+    if (response.statusCode == 201) {
+      print('Task created in course id $courseId');
+    } else {
+      throw Exception('Failed to create task in course id $courseId');
+    }
+  }
+}
+
+Future<void> createAnswer
+    (int courseId, int taskId, {String text, String fileUrl}) async {
+  getResponse() async {
+    var fieldsToPost = <String, String>{};
+
+    if (text != null) fieldsToPost['text'] = text;
+    if (fileUrl != null) fieldsToPost['file'] = fileUrl;
+
+    final response = await http.post(
+      'http://simpled-api.herokuapp.com/courses/$courseId/tasks/$taskId/solutions/',
+      headers: <String, String> {
+        'Content-Type': 'application/json',
+        'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
+      },
+      body: jsonEncode(fieldsToPost),
+    );
+    return response;
+  }
+
+  final response = await getResponse();
+  if (response.statusCode == 201) {
+    print('Answer on task id $taskId of course id $courseId created');
+  } else {
+    await JsonWebToken.refreshCreate();
+    final response = await getResponse();
+    if (response.statusCode == 201) {
+      print('Answer on task id $taskId of course id $courseId created');
+    } else {
+      throw Exception('Failed to create answer on task id $taskId of course id $courseId');
+    }
+  }
+}
+
+Future<void> putUpdateTaskInfo(Task task, int courseId) async {
+  getResponse() async {
+    var fieldsToUpdate = <String, String>{};
+
+    /// Convert to json date String format 2019-08-24T14:15:00Z
+    /// from 2019-08-24 and 14:15
+    fieldsToUpdate['title'] = task.title;
+    fieldsToUpdate['description'] = task.description;
+    fieldsToUpdate['deadline'] = task.deadlineDate + 'T'
+        + task.deadlineTime + ':00Z';
+    fieldsToUpdate['course'] = courseId.toString();
+
+    final response = await http.put(
+      'http://simpled-api.herokuapp.com/courses/$courseId/tasks/${task.id}/',
+      headers: <String, String> {
+        'Content-Type': 'application/json',
+        'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
+      },
+      body: jsonEncode(fieldsToUpdate),
+    );
+    return response;
+  }
+
+  final response = await getResponse();
+  if (response.statusCode == 200) {
+    print('Task id ${task.id} of course id $courseId is updated');
+  } else {
+    await JsonWebToken.refreshCreate();
+    final response = await getResponse();
+    if (response.statusCode == 200) {
+      print('Task id ${task.id} of course id $courseId is updated');
+    } else {
+      throw Exception('Failed to update task id ${task.id} of course id $courseId');
+    }
   }
 }
 
@@ -396,7 +563,32 @@ Future<void> deleteUser(int id) async {
     if (response.statusCode == 204) {
       print('User id $id is deleted');
     } else {
-      throw Exception('User id $id is deleted');
+      throw Exception('Failed to delete user id $id');
+    }
+  }
+}
+
+Future<void> deleteTask(int courseId, int taskId) async {
+  getResponse() async {
+    final response = await http.delete(
+      'http://simpled-api.herokuapp.com/courses/$courseId/tasks/$taskId/',
+      headers: <String, String> {
+        'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
+      },
+    );
+    return response;
+  }
+
+  final response = await getResponse();
+  if (response.statusCode == 204) {
+    print('Task id $taskId is deleted from course id $courseId');
+  } else {
+    await JsonWebToken.refreshCreate();
+    final response = await getResponse();
+    if (response.statusCode == 204) {
+      print('Task id $taskId is deleted from course id $courseId');
+    } else {
+      throw Exception('Failed to delete task id $taskId from course id $courseId');
     }
   }
 }
