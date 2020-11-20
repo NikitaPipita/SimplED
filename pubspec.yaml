@@ -21,6 +21,7 @@ environment:
   sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
+  flutter_downloader: ^1.5.2
   email_validator: ^1.0.6
   cloudinary_client: ^0.0.9
   http: ^0.12.2

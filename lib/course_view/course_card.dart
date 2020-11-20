@@ -42,10 +42,6 @@ class CourseCard extends StatelessWidget {
                         status,
                         userCoursesPageUpdate: userCoursesPageUpdate,
                       )
-//                      CourseCreationPage(
-//                        userCoursesPageUpdate,
-//                        courseInfo: courseInfo,
-//                      )
                   )
               );
             } else {

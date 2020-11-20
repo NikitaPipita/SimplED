@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../api_interection/data_models.dart';
-import '../api_interection/preload_info.dart';
-import '../api_interection/requests.dart';
-import 'course_card.dart';
+import '../../api_interection/data_models.dart';
+import '../../api_interection/preload_info.dart';
+import '../../api_interection/requests.dart';
+import '../course_card.dart';
 import 'course_search.dart';
 import 'courses_of_category_list.dart';
 
