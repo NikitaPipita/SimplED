@@ -128,11 +128,11 @@ class _AnswerPageState extends State<AnswerPage> {
           SizedBox(
             height: 16.0,
           ),
-          RaisedButton(
-            child: Text('Pick file'),
-            //TODO: Implement file picker.
-            onPressed: () {/***/},
-          ),
+//          RaisedButton(
+//            child: Text('Pick file'),
+//            //TODO: Implement file picker.
+//            onPressed: () {/***/},
+//          ),
           SizedBox(
             height: 16.0,
           ),
