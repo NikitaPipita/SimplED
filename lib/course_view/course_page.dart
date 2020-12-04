@@ -1,13 +1,19 @@
+import 'dart:async';
+
+import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:flutter/material.dart';
-import 'package:simpleed/api_interection/requests.dart';
-import 'package:simpleed/course_view/course_task/task_card.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../api_interection/data_models.dart';
 import '../api_interection/preload_info.dart';
+import '../api_interection/requests.dart';
 import '../user_courses/course_creation_page.dart';
-import 'course_card.dart';
+import 'course_task/task_card.dart';
 import 'course_task/task_list.dart';
+import 'course_video_call/pages/call.dart';
+import 'course_card.dart';
 import 'participant_card.dart';
+
 
 class CoursePage extends StatefulWidget {
   final Course courseInfo;
@@ -27,6 +33,7 @@ class _CoursePageState extends State<CoursePage>
     Tab(text: 'About'),
     Tab(text: 'Tasks'),
     Tab(text: 'Chat'),
+    Tab(text: 'Video call'),
     Tab(text: 'Participants'),
   ];
 
@@ -96,6 +103,7 @@ class _CoursePageState extends State<CoursePage>
               bottom: TabBar(
                 controller: _tabController,
                 tabs: courseTabs,
+                isScrollable: true,
               ),
             ),
           ];
@@ -106,6 +114,7 @@ class _CoursePageState extends State<CoursePage>
             aboutCourse(),
             taskListFutureBuilder(),
             Container(),
+            VideoCallRole(),
             CustomScrollView(
               slivers: [
                 SliverList(
@@ -216,6 +225,86 @@ class _CoursePageState extends State<CoursePage>
             child: CircularProgressIndicator()
         );
       },
+    );
+  }
+}
+
+
+class VideoCallRole extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => VideoCallRoleState();
+}
+
+class VideoCallRoleState extends State<VideoCallRole> {
+
+  ClientRole _role = ClientRole.Broadcaster;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        height: 400,
+        child: Column(
+          children: <Widget>[
+            Column(
+              children: [
+                ListTile(
+                  title: Text('Broadcaster'),
+                  leading: Radio(
+                    value: ClientRole.Broadcaster,
+                    groupValue: _role,
+                    onChanged: (ClientRole value) {
+                      setState(() {
+                        _role = value;
+                      });
+                    },
+                  ),
+                ),
+                ListTile(
+                  title: Text('Audience'),
+                  leading: Radio(
+                    value: ClientRole.Audience,
+                    groupValue: _role,
+                    onChanged: (ClientRole value) {
+                      setState(() {
+                        _role = value;
+                      });
+                    },
+                  ),
+                )
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: RaisedButton(
+                onPressed: joinVideoCall,
+                child: Text('Join'),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> joinVideoCall() async {
+    await _handleCameraAndMic();
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CallPage(
+          ///TODO: Add real channel name
+          channelName: 'default',
+          role: _role,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleCameraAndMic() async {
+    await PermissionHandler().requestPermissions(
+      [PermissionGroup.camera, PermissionGroup.microphone],
     );
   }
 }
