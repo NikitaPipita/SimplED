@@ -1,9 +1,9 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
-import 'package:simpleed/api_interection/requests.dart';
 
-import '../api_interection/authorized_user_info.dart';
-import '../api_interection/json_web_token.dart';
+import '../api_interaction/authorized_user_info.dart';
+import '../api_interaction/json_web_token.dart';
+import '../api_interaction/requests.dart';
 import '../bottom_navigation_page.dart';
 import 'registration_page.dart';
 

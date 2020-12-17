@@ -24,7 +24,7 @@ Future<bool> getCoursesCategoriesAndLanguages() async {
 Future<List<CourseCategory>> getCoursesCategories() async {
   getResponse() async {
     final response = await http.get(
-        'http://simpled-api.herokuapp.com/courses/categories/',
+        'https://simpled-api.herokuapp.com/courses/categories/',
         headers: <String, String> {
           'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
         }
@@ -54,7 +54,7 @@ Future<List<CourseCategory>> getCoursesCategories() async {
 Future<List<CourseLanguage>> getCoursesLanguages() async {
   getResponse() async {
     final response = await http.get(
-        'http://simpled-api.herokuapp.com/courses/languages/',
+        'https://simpled-api.herokuapp.com/courses/languages/',
         headers: <String, String> {
           'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
         }
@@ -85,7 +85,7 @@ Future<List<CourseLanguage>> getCoursesLanguages() async {
 Future<Map<String, List<Course>>> getCourses() async {
   getResponse() async {
     final response = await http.get(
-        'http://simpled-api.herokuapp.com/courses/',
+        'https://simpled-api.herokuapp.com/courses/',
         headers: <String, String> {
           'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
         }
@@ -122,7 +122,7 @@ Future<Map<String, List<Course>>> getCourses() async {
 Future<List<Course>> searchCourses(String query) async {
   getResponse() async {
     final response = await http.get(
-        'http://simpled-api.herokuapp.com/courses/?search=' + query,
+        'https://simpled-api.herokuapp.com/courses?search=$query',
         headers: <String, String> {
           'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
         }
@@ -152,7 +152,7 @@ Future<List<Course>> searchCourses(String query) async {
 Future<User> getUserInfo(int id) async {
   getResponse() async {
     final response = await http.get(
-        'http://simpled-api.herokuapp.com/users/$id',
+        'https://simpled-api.herokuapp.com/users/$id/',
         headers: <String, String> {
           'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
         }
@@ -181,7 +181,7 @@ Future<User> getUserInfo(int id) async {
 Future<UserCourses> getUserCourses() async {
   getResponse() async {
     final response = await http.get(
-        'http://simpled-api.herokuapp.com/users/${AuthorizedUserInfo.userInfo.id}?nested=true',
+        'https://simpled-api.herokuapp.com/users/${AuthorizedUserInfo.userInfo.id}?nested=true',
         headers: <String, String> {
           'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
         }
@@ -218,7 +218,7 @@ Future<UserCourses> getUserCourses() async {
 Future<List<Task>> getCourseTasks(int courseId) async {
   getResponse() async {
     final response = await http.get(
-        'http://simpled-api.herokuapp.com/courses/$courseId/tasks/',
+        'https://simpled-api.herokuapp.com/courses/$courseId/tasks/',
         headers: <String, String> {
           'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
         }
@@ -248,7 +248,7 @@ Future<List<Task>> getCourseTasks(int courseId) async {
 Future<List<TaskAnswer>> getCourseTaskAnswers(int courseId, int taskId) async {
   getResponse() async {
     final response = await http.get(
-        'http://simpled-api.herokuapp.com/courses/$courseId/tasks/$taskId/solutions/',
+        'https://simpled-api.herokuapp.com/courses/$courseId/tasks/$taskId/solutions/',
         headers: <String, String> {
           'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
         }
@@ -287,7 +287,7 @@ Future<void> createCourse(Course course) async {
     fieldsToPost['start_date'] = course.startDate;
 
     final response = await http.post(
-        'http://simpled-api.herokuapp.com/courses/',
+        'https://simpled-api.herokuapp.com/courses/',
         headers: <String, String> {
           'Content-Type': 'application/json',
           'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
@@ -301,11 +301,16 @@ Future<void> createCourse(Course course) async {
   if (response.statusCode == 201) {
     print('Course created');
   } else {
+    ///TODO: Delete print(data)
+    var data = jsonDecode(response.body);
+    print(data);
     await JsonWebToken.refreshCreate();
-    final response = await getResponse();
-    if (response.statusCode == 201) {
+    final secondResponse = await getResponse();
+    if (secondResponse.statusCode == 201) {
       print('Course created');
     } else {
+      var data = jsonDecode(secondResponse.body);
+      print(data);
       throw Exception('Failed to post course');
     }
   }
@@ -321,7 +326,7 @@ Future<User> createUser(User user, String password) async {
   };
 
   final response = await http.post(
-    'http://simpled-api.herokuapp.com/users/',
+    'https://simpled-api.herokuapp.com/users/',
     headers: <String, String> {
       'Content-Type': 'application/json',
     },
@@ -348,7 +353,7 @@ Future<void> createTask(Task task, int courseId) async {
     fieldsToPost['course'] = courseId.toString();
 
     final response = await http.post(
-      'http://simpled-api.herokuapp.com/courses/$courseId/tasks/',
+      'https://simpled-api.herokuapp.com/courses/$courseId/tasks/',
       headers: <String, String> {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
@@ -381,7 +386,7 @@ Future<void> createAnswer
     if (fileUrl != null) fieldsToPost['file'] = fileUrl;
 
     final response = await http.post(
-      'http://simpled-api.herokuapp.com/courses/$courseId/tasks/$taskId/solutions/',
+      'https://simpled-api.herokuapp.com/courses/$courseId/tasks/$taskId/solutions/',
       headers: <String, String> {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
@@ -418,7 +423,7 @@ Future<void> putUpdateTaskInfo(Task task, int courseId) async {
     fieldsToUpdate['course'] = courseId.toString();
 
     final response = await http.put(
-      'http://simpled-api.herokuapp.com/courses/$courseId/tasks/${task.id}/',
+      'https://simpled-api.herokuapp.com/courses/$courseId/tasks/${task.id}/',
       headers: <String, String> {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
@@ -454,7 +459,7 @@ Future<void> patchUpdateCourseInfo(Course course) async {
     fieldsToUpdate['start_date'] = course.startDate;
 
     final response = await http.patch(
-      'http://simpled-api.herokuapp.com/courses/${course.id}',
+      'https://simpled-api.herokuapp.com/courses/${course.id}/',
       headers: <String, String> {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
@@ -490,7 +495,7 @@ Future<User> patchUpdateUserInfo
     if (biography != null) fieldsToUpdate['bio'] = biography;
 
     final response = await http.patch(
-        'http://simpled-api.herokuapp.com/users/$id',
+        'https://simpled-api.herokuapp.com/users/$id/',
         headers: <String, String> {
           'Content-Type': 'application/json',
           'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
@@ -513,7 +518,7 @@ Future<User> patchUpdateUserInfo
     if (response.statusCode == 200) {
       return decodeResponse(response);
     } else {
-      throw Exception('Failed to reload user info with id $id');
+      throw Exception('Failed to reload user info with id $id. ${response.statusCode}.');
     }
   }
 }
@@ -521,7 +526,7 @@ Future<User> patchUpdateUserInfo
 Future<void> deleteCourse(int id) async {
   getResponse() async {
     final response = await http.delete(
-      'http://simpled-api.herokuapp.com/courses/$id',
+      'https://simpled-api.herokuapp.com/courses/$id/',
       headers: <String, String> {
         'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
       },
@@ -546,7 +551,7 @@ Future<void> deleteCourse(int id) async {
 Future<void> deleteUser(int id) async {
   getResponse() async {
     final response = await http.delete(
-      'http://simpled-api.herokuapp.com/users/$id',
+      'https://simpled-api.herokuapp.com/users/$id/',
       headers: <String, String> {
         'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
       },
@@ -571,7 +576,7 @@ Future<void> deleteUser(int id) async {
 Future<void> deleteTask(int courseId, int taskId) async {
   getResponse() async {
     final response = await http.delete(
-      'http://simpled-api.herokuapp.com/courses/$courseId/tasks/$taskId/',
+      'https://simpled-api.herokuapp.com/courses/$courseId/tasks/$taskId/',
       headers: <String, String> {
         'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
       },
@@ -589,6 +594,131 @@ Future<void> deleteTask(int courseId, int taskId) async {
       print('Task id $taskId is deleted from course id $courseId');
     } else {
       throw Exception('Failed to delete task id $taskId from course id $courseId');
+    }
+  }
+}
+
+Future<void> enrollInCourse(Course course, int userId) async {
+  getResponse() async {
+
+    var participants = course.participants;
+    if (!participants.contains(userId)) {
+      participants.add(userId);
+    }
+    var fieldsToUpdate = <String, List<int>>{};
+
+    fieldsToUpdate['participants'] = participants;
+
+    final response = await http.patch(
+      'https://simpled-api.herokuapp.com/courses/${course.id}/',
+      headers: <String, String> {
+        'Content-Type': 'application/json',
+        'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
+      },
+      body: jsonEncode(fieldsToUpdate),
+    );
+    return response;
+  }
+
+  final response = await getResponse();
+  if (response.statusCode == 200) {
+    print('Course id ${course.id} participants is updated');
+  } else {
+    await JsonWebToken.refreshCreate();
+    final response = await getResponse();
+    if (response.statusCode == 200) {
+      print('Course id ${course.id} participants is updated');
+    } else {
+      throw Exception('Failed to update participants course id ${course.id}');
+    }
+  }
+}
+
+Future<void> archiveCourse(Course course) async {
+  getResponse() async {
+    final response = await http.patch(
+      'https://simpled-api.herokuapp.com/courses/${course.id}/',
+      headers: <String, String> {
+        'Content-Type': 'application/json',
+        'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
+      },
+      body: jsonEncode(<String, dynamic> {
+        'is_active' : false,
+      }),
+    );
+    return response;
+  }
+
+  final response = await getResponse();
+  if (response.statusCode == 200) {
+    print('Course id ${course.id} is archived');
+  } else {
+    await JsonWebToken.refreshCreate();
+    final response = await getResponse();
+    if (response.statusCode == 200) {
+      print('Course id ${course.id} is archived');
+    } else {
+      throw Exception('Failed to archive course id ${course.id}');
+    }
+  }
+}
+
+Future<void> unarchiveCourse(Course course) async {
+  getResponse() async {
+    final response = await http.patch(
+      'https://simpled-api.herokuapp.com/courses/${course.id}/',
+      headers: <String, String> {
+        'Content-Type': 'application/json',
+        'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
+      },
+      body: jsonEncode(<String, dynamic> {
+        'is_active' : true,
+      }),
+    );
+    return response;
+  }
+
+  final response = await getResponse();
+  if (response.statusCode == 200) {
+    print('Course id ${course.id} is unarchived');
+  } else {
+    await JsonWebToken.refreshCreate();
+    final response = await getResponse();
+    if (response.statusCode == 200) {
+      print('Course id ${course.id} is unarchived');
+    } else {
+      throw Exception('Failed to unarchive course id ${course.id}');
+    }
+  }
+}
+
+Future<List<User>> getCourseParticipants(int courseId) async {
+  getResponse() async {
+    final response = await http.get(
+        'https://simpled-api.herokuapp.com/courses/$courseId/participants/',
+        headers: <String, String> {
+          'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
+        }
+    );
+    return response;
+  }
+
+  List<User> decodeResponse(http.Response response) {
+    var data = jsonDecode(response.body) as List;
+    return data.map((e) => User.fromJson(e)).toList();
+  }
+
+
+  final response = await getResponse();
+  if (response.statusCode == 200) {
+    return decodeResponse(response);
+  } else {
+    await JsonWebToken.refreshCreate();
+    final response = await getResponse();
+    if (response.statusCode == 200) {
+      return decodeResponse(response);
+    } else {
+      throw Exception('Failed to load course ud $courseId participants.');
     }
   }
 }

@@ -71,13 +71,14 @@ class UserCourses {
 class Course {
   final int id;
   final int creatorId;
-  final List<User> participants;
+  final List<int> participants;
   final String imageUrl;
   final String title;
   final String description;
   final String category;
   final String language;
   final String startDate;
+  final bool isActive;
 
   Course({
     this.id,
@@ -89,11 +90,12 @@ class Course {
     this.category,
     this.language,
     this.startDate,
+    this.isActive,
   });
 
   factory Course.fromJson(Map<String, dynamic> json) {
     var data = json['participants'] as List;
-    List<User> participants = data.map((e) => User.fromJson(e)).toList();
+    List<int> participants = data.map((e) => e as int).toList();
     return Course(
       id: json['id'],
       creatorId: json['creator'],
@@ -104,6 +106,7 @@ class Course {
       category: json['category'],
       language: json['language'],
       startDate: json['start_date'],
+      isActive: json['is_active'],
     );
   }
 }

@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:cloudinary_client/cloudinary_client.dart';
 import 'package:flutter/material.dart';
 
-import '../api_interection/authorized_user_info.dart';
-import '../api_interection/data_models.dart';
-import '../api_interection/json_web_token.dart';
-import '../api_interection/preload_info.dart';
-import '../api_interection/requests.dart';
+import '../api_interaction/authorized_user_info.dart';
+import '../api_interaction/data_models.dart';
+import '../api_interaction/json_web_token.dart';
+import '../api_interaction/preload_info.dart';
+import '../api_interaction/requests.dart';
 import 'achievements_card.dart';
 import 'edit_profile_page.dart';
 

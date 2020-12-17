@@ -15,7 +15,7 @@ class JsonWebToken {
     };
 
     final response = await http.post(
-      'http://simpled-api.herokuapp.com/users/token/',
+      'https://simpled-api.herokuapp.com/users/token/',
       headers: <String, String> {
         'Content-Type': 'application/json',
       },
@@ -29,6 +29,7 @@ class JsonWebToken {
       print('User is authenticated');
       return data['user_id'];
     } else {
+      print('Authentication failed. ' + response.statusCode.toString());
       return null;
     }
   }
@@ -38,7 +39,7 @@ class JsonWebToken {
       'refresh' : refreshToken,
     };
     final response = await http.post(
-      'http://simpled-api.herokuapp.com/users/refresh/',
+      'https://simpled-api.herokuapp.com/users/refresh/',
       headers: <String, String> {
         'Content-Type': 'application/json',
       },
@@ -49,9 +50,9 @@ class JsonWebToken {
       var data = jsonDecode(response.body);
       accessToken = data['access'];
       refreshToken = data['refresh'];
-      print('Json web token refresheed');
+      print('Json web token refreshed');
     } else {
-      throw Exception('Failed to refresheed json web token');
+      throw Exception('Failed to refreshed json web token');
     }
   }
 }

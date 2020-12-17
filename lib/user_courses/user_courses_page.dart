@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../api_interection/data_models.dart';
-import '../api_interection/requests.dart';
+import '../api_interaction/data_models.dart';
+import '../api_interaction/requests.dart';
 import '../course_view/course_card.dart';
 import 'course_creation_page.dart';
 
@@ -30,6 +30,10 @@ class _UserCoursesPageState extends State<UserCoursesPage> with SingleTickerProv
       await patchUpdateCourseInfo(course);
     } else if (requestType == HttpRequestType.delete) {
       await deleteCourse(course.id);
+    } else if (requestType == HttpRequestType.archive) {
+      await archiveCourse(course);
+    } else if (requestType == HttpRequestType.unarchive) {
+      await unarchiveCourse(course);
     }
     //TODO: Repair page reload.
     setState(() {
