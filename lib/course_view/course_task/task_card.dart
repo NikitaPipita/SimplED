@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:simpleed/course_view/course_task/creator_task_page.dart';
 
-import '../../api_interection/data_models.dart';
+import '../../api_interaction/data_models.dart';
 import 'answer_page.dart';
 import 'task_list.dart';
 

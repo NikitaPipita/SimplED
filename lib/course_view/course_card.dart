@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
-import '../api_interection/data_models.dart';
-import '../api_interection/preload_info.dart';
+import '../api_interaction/authorized_user_info.dart';
+import '../api_interaction/data_models.dart';
+import '../api_interaction/preload_info.dart';
 import 'course_page.dart';
 
 enum CourseViewType {
   view,
   searchView,
   enrolled,
-  created
+  created,
 }
 
 class CourseCard extends StatelessWidget {
@@ -33,24 +34,43 @@ class CourseCard extends StatelessWidget {
         child: FlatButton(
           shape: courseCardShape,
           onPressed: () {
-            if (status == CourseViewType.created) {
+            if (status == CourseViewType.created ||
+                AuthorizedUserInfo.userInfo.id == courseInfo.creatorId) {
+              CourseViewType creatorStatus = CourseViewType.created;
               Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) =>
                       CoursePage(
                         courseInfo,
-                        status,
+                        creatorStatus,
                         userCoursesPageUpdate: userCoursesPageUpdate,
                       )
                   )
               );
             } else {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) =>
-                      CoursePage(courseInfo, status)
-                  )
-              );
+              bool isUserEnrolled = false;
+              for (int userId in courseInfo.participants) {
+                if (userId == AuthorizedUserInfo.userInfo.id) {
+                  isUserEnrolled = true;
+                  break;
+                }
+              }
+              if (isUserEnrolled) {
+                CourseViewType participantStatus = CourseViewType.enrolled;
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>
+                        CoursePage(courseInfo, participantStatus)
+                    )
+                );
+              } else {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>
+                        CoursePage(courseInfo, status)
+                    )
+                );
+              }
             }
           },
           child: Padding(

@@ -2,10 +2,10 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 
 import '../bottom_navigation_page.dart';
-import '../api_interection/authorized_user_info.dart';
-import '../api_interection/data_models.dart';
-import '../api_interection/json_web_token.dart';
-import '../api_interection/requests.dart';
+import '../api_interaction/authorized_user_info.dart';
+import '../api_interaction/data_models.dart';
+import '../api_interaction/json_web_token.dart';
+import '../api_interaction/requests.dart';
 
 class RegistrationPage extends StatefulWidget {
   @override

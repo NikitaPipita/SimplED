@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../api_interection/authorized_user_info.dart';
-import '../api_interection/preload_info.dart';
+import '../api_interaction/authorized_user_info.dart';
+import '../api_interaction/preload_info.dart';
 
 enum UpdateUserProfilePageFlag {
   update

@@ -6,7 +6,7 @@ import 'package:agora_rtc_engine/rtc_remote_view.dart' as RtcRemoteView;
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
 
-import '../../../api_interection/authorized_user_info.dart';
+import '../../../api_interaction/authorized_user_info.dart';
 import '../utils/settings.dart';
 
 class CallPage extends StatefulWidget {

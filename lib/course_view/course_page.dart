@@ -3,10 +3,11 @@ import 'dart:async';
 import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:simpleed/api_interaction/authorized_user_info.dart';
 
-import '../api_interection/data_models.dart';
-import '../api_interection/preload_info.dart';
-import '../api_interection/requests.dart';
+import '../api_interaction/data_models.dart';
+import '../api_interaction/preload_info.dart';
+import '../api_interaction/requests.dart';
 import '../user_courses/course_creation_page.dart';
 import 'course_task/task_card.dart';
 import 'course_task/task_list.dart';
@@ -14,10 +15,10 @@ import 'course_video_call/pages/call.dart';
 import 'course_card.dart';
 import 'participant_card.dart';
 
-
+// ignore: must_be_immutable
 class CoursePage extends StatefulWidget {
   final Course courseInfo;
-  final CourseViewType status;
+  CourseViewType status;
   final Function userCoursesPageUpdate;
 
   CoursePage(this.courseInfo, this.status, {this.userCoursesPageUpdate});
@@ -28,7 +29,6 @@ class CoursePage extends StatefulWidget {
 
 class _CoursePageState extends State<CoursePage>
     with SingleTickerProviderStateMixin {
-
   final courseTabs = [
     Tab(text: 'About'),
     Tab(text: 'Tasks'),
@@ -41,12 +41,15 @@ class _CoursePageState extends State<CoursePage>
 
   Future _futureCourseTasks;
 
+  Future _futureCourseParticipants;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(vsync: this, length: courseTabs.length);
 
     _futureCourseTasks = getCourseTasks(widget.courseInfo.id);
+    _futureCourseParticipants = getCourseParticipants(widget.courseInfo.id);
   }
 
   @override
@@ -55,16 +58,20 @@ class _CoursePageState extends State<CoursePage>
     super.dispose();
   }
 
-  final participants = [
-    ParticipantCard(),
-    ParticipantCard(),
-    ParticipantCard(),
-    ParticipantCard(),
-    ParticipantCard(),
-    ParticipantCard(),
-    ParticipantCard(),
-    ParticipantCard(),
-  ];
+  bool isEnrolledOrCreated() {
+    if (widget.status == CourseViewType.enrolled ||
+        widget.status == CourseViewType.created) {
+      return true;
+    }
+    return false;
+  }
+
+  void signUpForCourse() async {
+    await enrollInCourse(widget.courseInfo, AuthorizedUserInfo.userInfo.id);
+    setState(() {
+      widget.status = CourseViewType.enrolled;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,55 +83,57 @@ class _CoursePageState extends State<CoursePage>
               expandedHeight: 300.0,
               floating: true,
               actions: widget.status == CourseViewType.created
-                  ? [
-                      IconButton(
-                        icon: Icon(Icons.create),
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => CourseCreationPage(
-                                        widget.userCoursesPageUpdate,
-                                        courseInfo: widget.courseInfo,
-                                      )
-                              )
-                          );
-                        },
-                      )
-                    ]
+                  ? [creatorEditCourseButton()]
                   : [],
               flexibleSpace: FlexibleSpaceBar(
-                background: Image.network(
-                    PreloadInfo.cloudUrl +
+                background: Image.network(PreloadInfo.cloudUrl +
                     PreloadInfo.cloudName +
                     '/' +
                     widget.courseInfo.imageUrl),
               ),
-              bottom: TabBar(
-                controller: _tabController,
-                tabs: courseTabs,
-                isScrollable: true,
-              ),
+              bottom: isEnrolledOrCreated() ? tabBar() : null,
             ),
           ];
         },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            aboutCourse(),
-            taskListFutureBuilder(),
-            Container(),
-            VideoCallRole(),
-            CustomScrollView(
-              slivers: [
-                SliverList(
-                  delegate: SliverChildListDelegate(participants),
-                ),
-              ],
-            ),
-          ], // <--- the array item is a ListView
-        ),
+        body: isEnrolledOrCreated() ? tabBarView() : aboutCourse(),
       ),
+    );
+  }
+
+  Widget creatorEditCourseButton() {
+    return IconButton(
+      icon: Icon(Icons.create),
+      onPressed: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) =>
+                CourseCreationPage(
+                  widget.userCoursesPageUpdate,
+                  courseInfo: widget.courseInfo,)
+            )
+        );
+      },
+    );
+  }
+
+  Widget tabBar() {
+    return TabBar(
+      controller: _tabController,
+      tabs: courseTabs,
+      isScrollable: true,
+    );
+  }
+
+  Widget tabBarView() {
+    return TabBarView(
+      controller: _tabController,
+      children: [
+        aboutCourse(),
+        taskListFutureBuilder(),
+        Container(),
+        VideoCallRole(),
+        participantsFutureBuilder(),
+      ], // <--- the array item is a ListView
     );
   }
 
@@ -151,9 +160,8 @@ class _CoursePageState extends State<CoursePage>
                 style: TextStyle(
                     color: Colors.black,
                     fontSize: 18.0,
-                    fontWeight: FontWeight.bold
-                ),
-                children: <TextSpan> [
+                    fontWeight: FontWeight.bold),
+                children: <TextSpan>[
                   TextSpan(
                     text: PreloadInfo
                         .coursesLanguages[widget.courseInfo.language],
@@ -174,9 +182,8 @@ class _CoursePageState extends State<CoursePage>
                 style: TextStyle(
                     color: Colors.black,
                     fontSize: 18.0,
-                    fontWeight: FontWeight.bold
-                ),
-                children: <TextSpan> [
+                    fontWeight: FontWeight.bold),
+                children: <TextSpan>[
                   TextSpan(
                     text: widget.courseInfo.startDate,
                     style: TextStyle(
@@ -196,9 +203,25 @@ class _CoursePageState extends State<CoursePage>
                 fontSize: 18.0,
               ),
             ),
+            SizedBox(
+              height: 12.0,
+            ),
+            enrollCourseButton(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget enrollCourseButton() {
+    return RaisedButton(
+      onPressed: isEnrolledOrCreated()
+          ? (){/*Nothing need to do*/}
+          : signUpForCourse,
+      child: Text(
+          isEnrolledOrCreated() ? 'Enrolled' : 'Enrol?'
+      ),
+      color: isEnrolledOrCreated() ? Colors.green : Colors.blue,
     );
   }
 
@@ -217,18 +240,37 @@ class _CoursePageState extends State<CoursePage>
           }
           return TaskList(widget.courseInfo.id, taskListViewType, taskList);
         } else if (snapshot.hasError) {
-          return Center(
-              child: Text("${snapshot.error}")
-          );
+          return Center(child: Text("${snapshot.error}"));
         }
-        return Center(
-            child: CircularProgressIndicator()
-        );
+        return Center(child: CircularProgressIndicator());
+      },
+    );
+  }
+
+  Widget participantsFutureBuilder() {
+    var participantsList = <Widget>[];
+    return FutureBuilder(
+      future: _futureCourseParticipants,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          for (User user in snapshot.data) {
+            participantsList.add(ParticipantCard(user));
+          }
+          return CustomScrollView(
+            slivers: [
+              SliverList(
+                delegate: SliverChildListDelegate(participantsList),
+              ),
+            ],
+          );
+        } else if (snapshot.hasError) {
+          return Center(child: Text("${snapshot.error}"));
+        }
+        return Center(child: CircularProgressIndicator());
       },
     );
   }
 }
-
 
 class VideoCallRole extends StatefulWidget {
   @override
@@ -236,7 +278,6 @@ class VideoCallRole extends StatefulWidget {
 }
 
 class VideoCallRoleState extends State<VideoCallRole> {
-
   ClientRole _role = ClientRole.Broadcaster;
 
   @override

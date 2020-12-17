@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
 
-import 'api_interection/preload_info.dart';
-import 'api_interection/requests.dart';
+import 'api_interaction/preload_info.dart';
+import 'api_interaction/requests.dart';
 import 'course_view/course_list_view/course_list_page.dart';
 import 'user_courses/user_courses_page.dart';
 import 'user_profile/user_profile_page.dart';

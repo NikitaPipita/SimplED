@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../api_interaction/data_models.dart';
+import '../api_interaction/preload_info.dart';
+
 class ParticipantCard extends StatelessWidget {
+  final User user;
+
+  ParticipantCard(this.user);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -11,14 +18,17 @@ class ParticipantCard extends StatelessWidget {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundImage: NetworkImage('https://w1.pngwing.com/pngs/743/500/png-transparent-circle-silhouette-logo-user-user-profile-green-facial-expression-nose-cartoon.png'),
+                backgroundImage: NetworkImage(PreloadInfo.cloudUrl +
+                    PreloadInfo.cloudName +
+                    '/' +
+                    user.imageUrl),
                 radius: 30.0,
               ),
               SizedBox(
                 width: 15.0,
               ),
               Text(
-                'Name Name',
+                user.firstName + ' ' + user.lastName,
                 maxLines: 1,
               ),
             ],

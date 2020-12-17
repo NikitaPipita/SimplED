@@ -4,14 +4,17 @@ import 'package:cloudinary_client/cloudinary_client.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:simpleed/api_interaction/requests.dart';
 
-import '../api_interection/data_models.dart';
-import '../api_interection/preload_info.dart';
+import '../api_interaction/data_models.dart';
+import '../api_interaction/preload_info.dart';
 
 enum HttpRequestType {
   create,
   update,
-  delete
+  delete,
+  archive,
+  unarchive
 }
 
 class CourseCreationPage extends StatefulWidget {
@@ -135,7 +138,18 @@ class _CourseCreationPageState extends State<CourseCreationPage> {
               SizedBox(
                 height: 15.0,
               ),
-              createCourseButton(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  createCourseButton(),
+                  widget.courseInfo != null
+                      ? SizedBox(width: 15.0,)
+                      : Container(),
+                  widget.courseInfo != null
+                      ? archiveCourseButton()
+                      : Container(),
+                ],
+              ),
             ],
           ),
         ),
@@ -199,6 +213,22 @@ class _CourseCreationPageState extends State<CourseCreationPage> {
           Navigator.pop(context);
         }
       },
+    );
+  }
+
+  Widget archiveCourseButton() {
+    return RaisedButton(
+      onPressed: () {
+        if (widget.courseInfo.isActive) {
+          widget.userCoursesPageUpdate(widget.courseInfo, HttpRequestType.archive);
+        } else {
+          widget.userCoursesPageUpdate(widget.courseInfo, HttpRequestType.unarchive);
+        }
+        Navigator.pop(context);
+      },
+      child: Text(
+        widget.courseInfo.isActive ? 'Archive' : 'Unarchive',
+      ),
     );
   }
 }

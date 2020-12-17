@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:simpleed/api_interection/requests.dart';
 
-import '../../api_interection/data_models.dart';
+import '../../api_interaction/data_models.dart';
+import '../../api_interaction/requests.dart';
 import 'answer_card.dart';
 import 'task_creation_page.dart';
 
