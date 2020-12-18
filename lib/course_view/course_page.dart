@@ -9,6 +9,7 @@ import '../api_interaction/data_models.dart';
 import '../api_interaction/preload_info.dart';
 import '../api_interaction/requests.dart';
 import '../user_courses/course_creation_page.dart';
+import 'course_chat/course_chat_page.dart';
 import 'course_task/task_card.dart';
 import 'course_task/task_list.dart';
 import 'course_video_call/pages/call.dart';
@@ -130,7 +131,7 @@ class _CoursePageState extends State<CoursePage>
       children: [
         aboutCourse(),
         taskListFutureBuilder(),
-        Container(),
+        enterCharButton(),
         VideoCallRole(),
         participantsFutureBuilder(),
       ], // <--- the array item is a ListView
@@ -244,6 +245,22 @@ class _CoursePageState extends State<CoursePage>
         }
         return Center(child: CircularProgressIndicator());
       },
+    );
+  }
+
+  Widget enterCharButton() {
+    return Center(
+      child: RaisedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChatPage(widget.courseInfo),
+            ),
+          );
+        },
+        child: Text('Enter Chat'),
+      ),
     );
   }
 

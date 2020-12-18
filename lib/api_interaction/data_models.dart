@@ -176,3 +176,38 @@ class TaskAnswer {
     );
   }
 }
+
+class Message {
+  final int userId;
+  final String userName;
+  final String text;
+
+  Message({
+    this.userId,
+    this.userName,
+    this.text});
+
+  factory Message.fromJson(Map<String, dynamic> json) {
+    return Message(
+      userId: json['sender_id'],
+      userName: json['full_name'],
+      text: json['text'],
+    );
+  }
+}
+
+class PreviousMessage {
+  final User user;
+  final String text;
+
+  PreviousMessage({
+    this.user,
+    this.text});
+
+  factory PreviousMessage.fromJson(Map<String, dynamic> json) {
+    return PreviousMessage(
+      user: User.fromJson(json['sender']),
+      text: json['text'],
+    );
+  }
+}
