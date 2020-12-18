@@ -718,7 +718,38 @@ Future<List<User>> getCourseParticipants(int courseId) async {
     if (response.statusCode == 200) {
       return decodeResponse(response);
     } else {
-      throw Exception('Failed to load course ud $courseId participants.');
+      throw Exception('Failed to load course id $courseId participants.');
+    }
+  }
+}
+
+Future<List<PreviousMessage>> getAllPreviousMessages(int courseId) async {
+  getResponse() async {
+    final response = await http.get(
+        'https://simpled-api.herokuapp.com/chats/$courseId/messages/',
+        headers: <String, String> {
+          'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
+        }
+    );
+    return response;
+  }
+
+  List<PreviousMessage> decodeResponse(http.Response response) {
+    var data = jsonDecode(response.body) as List;
+    return data.map((e) => PreviousMessage.fromJson(e)).toList();
+  }
+
+
+  final response = await getResponse();
+  if (response.statusCode == 200) {
+    return decodeResponse(response);
+  } else {
+    await JsonWebToken.refreshCreate();
+    final response = await getResponse();
+    if (response.statusCode == 200) {
+      return decodeResponse(response);
+    } else {
+      throw Exception('Failed to load course id $courseId messages.');
     }
   }
 }

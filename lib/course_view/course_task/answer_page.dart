@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
 
 import '../../api_interaction/data_models.dart';
 import '../../api_interaction/requests.dart';
