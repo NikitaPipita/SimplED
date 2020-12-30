@@ -48,9 +48,6 @@ class _CoursePageState extends State<CoursePage>
   void initState() {
     super.initState();
     _tabController = TabController(vsync: this, length: courseTabs.length);
-
-    _futureCourseTasks = getCourseTasks(widget.courseInfo.id);
-    _futureCourseParticipants = getCourseParticipants(widget.courseInfo.id);
   }
 
   @override
@@ -69,6 +66,10 @@ class _CoursePageState extends State<CoursePage>
 
   void signUpForCourse() async {
     await enrollInCourse(widget.courseInfo, AuthorizedUserInfo.userInfo.id);
+    await sendNotifications(NotificationRecipients(
+        title: 'Welcome to ${widget.courseInfo.title}',
+        text: 'Hello, ${AuthorizedUserInfo.userInfo.firstName} ${AuthorizedUserInfo.userInfo.lastName}! Welcome to ${widget.courseInfo.title}',
+        emails: <String>[AuthorizedUserInfo.userInfo.email]));
     setState(() {
       widget.status = CourseViewType.enrolled;
     });
@@ -76,6 +77,8 @@ class _CoursePageState extends State<CoursePage>
 
   @override
   Widget build(BuildContext context) {
+    _futureCourseTasks = getCourseTasks(widget.courseInfo.id);
+    _futureCourseParticipants = getCourseParticipants(widget.courseInfo.id);
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
@@ -107,12 +110,11 @@ class _CoursePageState extends State<CoursePage>
       onPressed: () {
         Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) =>
-                CourseCreationPage(
-                  widget.userCoursesPageUpdate,
-                  courseInfo: widget.courseInfo,)
-            )
-        );
+            MaterialPageRoute(
+                builder: (context) => CourseCreationPage(
+                      widget.userCoursesPageUpdate,
+                      courseInfo: widget.courseInfo,
+                    )));
       },
     );
   }
@@ -217,11 +219,11 @@ class _CoursePageState extends State<CoursePage>
   Widget enrollCourseButton() {
     return RaisedButton(
       onPressed: isEnrolledOrCreated()
-          ? (){/*Nothing need to do*/}
+          ? () {
+              /*Nothing need to do*/
+            }
           : signUpForCourse,
-      child: Text(
-          isEnrolledOrCreated() ? 'Enrolled' : 'Enrol?'
-      ),
+      child: Text(isEnrolledOrCreated() ? 'Enrolled' : 'Enrol?'),
       color: isEnrolledOrCreated() ? Colors.green : Colors.blue,
     );
   }
@@ -235,6 +237,7 @@ class _CoursePageState extends State<CoursePage>
       future: _futureCourseTasks,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
+          taskList.clear();
           for (Task task in snapshot.data) {
             taskList
                 .add(TaskCard(widget.courseInfo.id, taskListViewType, task));

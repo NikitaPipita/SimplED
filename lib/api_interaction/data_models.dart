@@ -211,3 +211,14 @@ class PreviousMessage {
     );
   }
 }
+
+class NotificationRecipients {
+  final String title;
+  final String text;
+  final List<String> emails;
+
+  NotificationRecipients({
+    this.title,
+    this.text,
+    this.emails});
+}

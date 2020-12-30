@@ -301,9 +301,6 @@ Future<void> createCourse(Course course) async {
   if (response.statusCode == 201) {
     print('Course created');
   } else {
-    ///TODO: Delete print(data)
-    var data = jsonDecode(response.body);
-    print(data);
     await JsonWebToken.refreshCreate();
     final secondResponse = await getResponse();
     if (secondResponse.statusCode == 201) {
@@ -380,8 +377,9 @@ Future<void> createTask(Task task, int courseId) async {
 Future<void> createAnswer
     (int courseId, int taskId, {String text, String fileUrl}) async {
   getResponse() async {
-    var fieldsToPost = <String, String>{};
+    var fieldsToPost = <String, dynamic>{};
 
+    fieldsToPost['task'] = taskId;
     if (text != null) fieldsToPost['text'] = text;
     if (fileUrl != null) fieldsToPost['file'] = fileUrl;
 
@@ -397,12 +395,18 @@ Future<void> createAnswer
   }
 
   final response = await getResponse();
+  var data = jsonDecode(response.body);
+  print(data);
   if (response.statusCode == 201) {
+    var data = jsonDecode(response.body);
+    print(data);
     print('Answer on task id $taskId of course id $courseId created');
   } else {
     await JsonWebToken.refreshCreate();
     final response = await getResponse();
     if (response.statusCode == 201) {
+      var data = jsonDecode(response.body);
+      print(data);
       print('Answer on task id $taskId of course id $courseId created');
     } else {
       throw Exception('Failed to create answer on task id $taskId of course id $courseId');
@@ -750,6 +754,41 @@ Future<List<PreviousMessage>> getAllPreviousMessages(int courseId) async {
       return decodeResponse(response);
     } else {
       throw Exception('Failed to load course id $courseId messages.');
+    }
+  }
+}
+
+Future<void> sendNotifications(
+    NotificationRecipients notificationRecipients) async {
+
+  getResponse() async {
+    final response = await http.post(
+      'https://simpled-api.herokuapp.com/users/notify/',
+      headers: <String, String> {
+        'Content-Type': 'application/json',
+        'Authorization' : 'Bearer ' + JsonWebToken.accessToken,
+      },
+      body: jsonEncode(<String, dynamic> {
+        'subject' : notificationRecipients.title,
+        'message' : notificationRecipients.text,
+        'users' : notificationRecipients.emails,
+      }),
+    );
+    return response;
+  }
+
+  final response = await getResponse();
+  if (response.statusCode == 204) {
+    print('Notifications sent.');
+    return;
+  } else {
+    await JsonWebToken.refreshCreate();
+    final response = await getResponse();
+    if (response.statusCode == 204) {
+      print('Notifications sent.');
+      return;
+    } else {
+      throw Exception('Failed to send notifications.');
     }
   }
 }
