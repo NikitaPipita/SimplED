@@ -80,7 +80,7 @@ class CourseCard extends StatelessWidget {
               children: [
                 Text(
                   courseInfo.title,
-                  maxLines: status == CourseViewType.view ? 1 : 2,
+                  maxLines: 1,
                   style: TextStyle(
                     fontSize: status == CourseViewType.view ? 16.0 : 20.0,
                     fontWeight: FontWeight.bold,
